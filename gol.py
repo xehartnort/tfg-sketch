@@ -24,14 +24,18 @@ class GameOfLife:
         with open(filename,'r') as f:
             m = np.zeros(shape=(size, size), type=np.int8)
             data = json.load(f)
+            # read this data properly
             h = data['height']
             w = data['width']
             rle_str = data['rle']
             # 'b' off cell, 'o' on cell
             init_x = size/2 + h/2
             init_y = size/2 + w/2
+            fil = 0
+            col = 0
             lastInt = False # last char was integer
             times = 1
+            # Asume que está bien
             for i in range(len(rle_str)):
                 char = rle_str[i]
                 try:
@@ -43,14 +47,23 @@ class GameOfLife:
                 except ValueError:
                     if char == "b":
                         for i in range(times):
-                            if i < w:
-                                
-                            else:
+                            col += 1
+                            if col == w:
+                                col = 0
+                                fil +=1
                                 break
                     elif char == "o":
-
+                        for i in range(times):
+                            m[init_x+fil,init_y+col] = 1
+                            col += 1
+                            if col == w:
+                                col = 0
+                                fil += 1
+                                break
                     elif char == "$":
-                        #end current line
+                        for i in range(times):
+                            fil += 1
+                            col = 0
                     elif char == "!":
                         break
                     lastInt = False
