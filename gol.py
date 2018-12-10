@@ -11,17 +11,14 @@ import numexpr as ne
 class GameOfLife:
     # TODO THIS IS ONLY FOR A FINITE BOARD
     # Maybe here we should add a "seed" argument for the randomness
-    def __init__(self, initial_conf_file, size=7, seed=None):
+    def __init__(self, initial_conf_file, size=6, seed=None):
         # Game of Life size
         self.size = size
-        # Big array which stores each step
         self.m_history = []
-        # Smallest square which contains the pattern
         self.min_x = self.size
         self.min_y = self.size
         self.max_x = 0
         self.max_y = 0
-        # Load a configuration:
         initial_conf = self.__load_conf__(initial_conf_file)
         self.m_history.append(initial_conf)
 
@@ -31,17 +28,17 @@ class GameOfLife:
         for i in range(len(input_row)):
             char = input_row[i]
             if char.isdigit():
-                if run_count_str != "":
-                    run_count_str += char
-                else:
-                    run_count_str = char
+                run_count_str += char
+                # if run_count_str != "":
+                #     run_count_str += char
+                # else:
+                #     run_count_str = char
             else:
                 cell_value = 1 if char == 'o' else 0
                 if run_count_str == "":
                     new_row += [cell_value]
                 else:
                     new_row += [cell_value]*int(run_count_str)
-                # Set everything to default
                 run_count_str = ""
         if "!" in input_row[-1]:
             run_count_str = 0
@@ -71,13 +68,6 @@ class GameOfLife:
                         raw_pattern += line.strip(" \n\r\t")
                 assert width <= self.size
                 assert height <= self.size 
-                # Si el tamanio es el mismo, 
-                #if width == self.size and height == self.size:
-                #    self.min_x = 0
-                #    self.min_y = 0
-                #    self.max_x = self.size
-                #    self.max_y = self.size
-                #else:
                 self.min_x = int(self.size/2) - int(width/2)
                 self.min_y = int(self.size/2) - int(height/2)
                 self.max_x = self.min_x + width
@@ -87,17 +77,13 @@ class GameOfLife:
                 row_pos = self.min_y
                 for r in rows:
                     n_row, skip = self._parse_row_(r)
-                    row_pos += skip
-                    print("row_pos: {}, skip: {}".format(row_pos,skip))
                     for i in range(width):
-                        assert row_pos < self.size
                         m[row_pos, self.min_x+i] = n_row[i]
+                    row_pos += skip
                 return m
-    # it saves the state in a new way jiji
+
     def save_state_to_file(self, output_filename):
         m = self.m_history[-1] # get last history
-        # self.compute_smallest_square()
-        # now iterate throught the smallest square
         raw_pattern = ""
         len_o = 0
         len_b = 0
@@ -126,7 +112,6 @@ class GameOfLife:
             f.write("#N {}".format(self.name)+"\n")
             f.write("x = {}, y = {}".format(self.size, self.size)+"\n")
             f.write(raw_pattern+"\n")
-
 
     def compute_smallest_square(self):
         m = self.m_history[-1]
@@ -173,9 +158,7 @@ class GameOfLife:
                 np.c_[ np.zeros(self.size-1, dtype=np.uint8), m[:-1,:-1] ] ]
             allSW = np.r_[ [np.zeros(self.size, dtype=np.uint8)],  
                 np.c_[ m[:-1,1:], np.zeros(self.size-1, dtype=np.uint8) ] ]
-            # pegar por abajo y por la derecha
             allNW = np.r_[ np.c_[ m[1:,1:], np.zeros(self.size-1) ],[np.zeros(self.size, dtype=np.uint8)] ]
-            # pegar por abajo y por la izquierda
             allNE = np.r_[ np.c_[ np.zeros(self.size-1, dtype=np.uint8), m[1:,:-1] ],[np.zeros(self.size, dtype=np.uint8)]]
             # parallel summation of the matrices
             m2 = allW + allNW + allN + allNE + allE + allSE + allS + allSW
@@ -186,6 +169,10 @@ class GameOfLife:
             self.m_history.append(m_next)
 
 
+def print_no_newline(string):
+    if type(string) != type(''):
+        string = str(string)
+    print(string, end='\r'*len(string))
 
 # Here we have our main
 if __name__ == "__main__":
@@ -193,30 +180,7 @@ if __name__ == "__main__":
     m = gol.get_current_state()
     print("Archivo cargado: ")
     print(m)
-    # La transicion no funciona
-    for i in range(3):
-        print("Iteracion {}".format(i))
+    for i in range(3000):
+        #print("Iteracion {}".format(i),end="\r")
         gol.run(steps=1)
         print(gol.get_current_state())
-    gol.save_state_to_file("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    golLoaded = GameOfLife("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    print("Archivo cargado")
-    print(golLoaded.get_current_state())
-    gol.run(steps=1)
-
-    gol.save_state_to_file("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    golLoaded = GameOfLife("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    print("Archivo cargado")
-    print(golLoaded.get_current_state())
-    gol.run(steps=1)
-
-    gol.save_state_to_file("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    golLoaded = GameOfLife("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    print("Archivo cargado")
-    print(golLoaded.get_current_state())
-    gol.run(steps=1)
-
-    gol.save_state_to_file("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    golLoaded = GameOfLife("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/new_state")
-    print("Archivo cargado")
-    print(golLoaded.get_current_state())
