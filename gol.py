@@ -1,17 +1,17 @@
 import numpy as np
 import json
 import numexpr as ne
+#CUSTOM IMPORT
+from libs.custom_rand import *
 
 # TODO
 # Si alcanza el borde, entonces acabamos
-# Guardar ultimo estado
-# Implementar mi propio rand
+# Añadir rand a la implementación
 
 # Python 3
 class GameOfLife:
     # TODO THIS IS ONLY FOR A FINITE BOARD
-    # Maybe here we should add a "seed" argument for the randomness
-    def __init__(self, initial_conf_file, size=6, seed=None):
+    def __init__(self, initial_conf_file, size=6):
         # Game of Life size
         self.size = size
         self.m_history = []
@@ -161,7 +161,7 @@ class GameOfLife:
             allNW = np.r_[ np.c_[ m[1:,1:], np.zeros(self.size-1) ],[np.zeros(self.size, dtype=np.uint8)] ]
             allNE = np.r_[ np.c_[ np.zeros(self.size-1, dtype=np.uint8), m[1:,:-1] ],[np.zeros(self.size, dtype=np.uint8)]]
             # parallel summation of the matrices
-            m2 = allW + allNW + allN + allNE + allE + allSE + allS + allSW
+            m2 = ne.evaluate("allW + allNW + allN + allNE + allE + allSE + allS + allSW")
             # Apply GoL rule
             for i in range(self.size):
                 for j in range(self.size):
@@ -176,7 +176,7 @@ def print_no_newline(string):
 
 # Here we have our main
 if __name__ == "__main__":
-    gol = GameOfLife("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/oscilator.rle")
+    gol = GameOfLife("/home/xehartnort/Escritorio/Trabajo/tfg-sketch/patterns/oscilator.rle")
     m = gol.get_current_state()
     print("Archivo cargado: ")
     print(m)
