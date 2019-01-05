@@ -14,7 +14,7 @@
 #define RNMX (1.0-EPS)
 
 /*
-Long period (> 2 × 10 18 ) random number generator of L’Ecuyer with Bays-Durham shuffle
+Long period (> 2 × 10^18 ) random number generator of L’Ecuyer with Bays-Durham shuffle
 and added safeguards. Returns a uniform random deviate between 0.0 and 1.0 (exclusive of
 the endpoint values). Call with idum a negative integer to initialize; thereafter, do not alter
 idum between successive deviates in a sequence. RNMX should approximate the largest floating

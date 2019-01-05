@@ -752,7 +752,7 @@ static const char __pyx_k_rand[] = "rand";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_setSeed[] = "setSeed";
 static const char __pyx_k_custom_rand[] = "custom_rand";
-static const char __pyx_k_home_xehartnort_Escritorio_Trab[] = "/home/xehartnort/Escritorio/Trabajo/tfg-sketch/custom_rand.pyx";
+static const char __pyx_k_home_xehartnort_Escritorio_Trab[] = "/home/xehartnort/Escritorio/Trabajo/tfg-sketch/libs/custom_rand.pyx";
 static PyObject *__pyx_n_s_custom_rand;
 static PyObject *__pyx_kp_s_home_xehartnort_Escritorio_Trab;
 static PyObject *__pyx_n_s_main;

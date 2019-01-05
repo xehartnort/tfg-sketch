@@ -105,3 +105,9 @@ venv.bak/
 
 # vscode
 .vscode
+
+# node modules
+JS/node_modules/
+
+# JS
+JS/package-lock.json
