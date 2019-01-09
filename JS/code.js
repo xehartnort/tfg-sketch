@@ -1,5 +1,5 @@
 
-const uri = 'oscilator100.json';
+const uri = 'oscilator-100-1000-105.json';
 const layoutOptionsB = {
   name: 'breadthfirst',
   fit: true, // whether to fit the viewport to the graph
