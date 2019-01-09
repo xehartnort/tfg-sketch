@@ -1,5 +1,4 @@
 <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
-<title>Animated BFS</title>
 <style>
 #cy {
     height: 100%;
@@ -8,14 +7,19 @@
     left: 0;
     top: 0;
 }
+#prune{
+    position: fixed;
+    height: 10%;
+    width: 10%;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://github.com/cytoscape/cytoscape.js-klay"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.3.1/cytoscape.min.js"></script>
 
 </head>
 <body>
 <div id="cy"></div>
+<button id="prune">Prune</button>
 <!-- Load application code at the end to ensure DOM is loaded -->
 <script src="code.js"></script>
 </body>

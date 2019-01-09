@@ -84,7 +84,7 @@ class GameOfLife:
     def __transition__(self, current_state, num_neigh):
         if r.rand() < self.prob:
             new_state = 0
-            if current_state == 1 and (num_neigh == 2 or num_neigh == 3): # survival rule
+            if current_state >= 1 and (num_neigh == 2 or num_neigh == 3): # survival rule
                 new_state = 1
             elif current_state == 0 and num_neigh == 3: # born rule
                 new_state = 1
@@ -110,9 +110,9 @@ class GameOfLife:
         len_b = 0
         if endPoint == None:
             endPoint = (self.size, self.size)
-        for i in range(initPoint[0], endPoint[0]): 
-            for j in range(initPoint[1], endPoint[1]):
-                if self.m[i,j] == 1:
+        for i in range(initPoint[0], endPoint[0]+1): 
+            for j in range(initPoint[1], endPoint[1]+1):
+                if self.m[i,j] >= 1:
                     if len_b > 0:
                         raw_pattern += (str(len_b) if len_b>1 else "")+'b'
                         len_b = 0
@@ -137,32 +137,32 @@ class GameOfLife:
         if self.new_run:
             self.new_run = False
             if np.sum(self.m) != 0:
-                self.min_x = 0
-                while np.sum(self.m[self.min_x]) == 0:
-                    self.min_x += 1
-                if self.min_x != 0:
-                    self.min_x -= 1
-                else:
-                    self.limit_reached = True
-                self.max_x = self.size-1
-                while np.sum(self.m[self.max_x]) == 0:
-                    self.max_x -= 1
-                if self.max_x != self.size-1:
-                    self.max_x += 1
-                else:
-                    self.limit_reached = True
                 self.min_y = 0
-                while np.sum(self.m[:,self.min_y]) == 0:
-                    self.min_y +=1
-                if self.min_y != 0: 
+                while np.sum(self.m[self.min_y]) == 0:
+                    self.min_y += 1
+                if self.min_y != 0:
                     self.min_y -= 1
                 else:
                     self.limit_reached = True
                 self.max_y = self.size-1
-                while np.sum(self.m[:,self.max_y]) == 0:
+                while np.sum(self.m[self.max_y]) == 0:
                     self.max_y -= 1
                 if self.max_y != self.size-1:
                     self.max_y += 1
+                else:
+                    self.limit_reached = True
+                self.min_x = 0
+                while np.sum(self.m[:,self.min_x]) == 0:
+                    self.min_x +=1
+                if self.min_x != 0: 
+                    self.min_x -= 1
+                else:
+                    self.limit_reached = True
+                self.max_x = self.size-1
+                while np.sum(self.m[:,self.max_x]) == 0:
+                    self.max_x -= 1
+                if self.max_x != self.size-1:
+                    self.max_x += 1
                 else:
                     self.limit_reached = True
             else:

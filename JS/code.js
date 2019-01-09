@@ -1,30 +1,82 @@
-/*
-let ele = {
-  nodes: [
-    { data: { id: 'a' } },
-    { data: { id: 'b' } },
-    { data: { id: 'c' } },
-    { data: { id: 'd' } },
-    { data: { id: 'e' } }
-  ],
 
-  edges: [
-    { data: { id: 'a"e', weight: 1, source: 'a', target: 'e' } },
-    { data: { id: 'ab', weight: 3, source: 'a', target: 'b' } },
-    { data: { id: 'be', weight: 4, source: 'b', target: 'e' } },
-    { data: { id: 'bc', weight: 5, source: 'b', target: 'c' } },
-    { data: { id: 'ce', weight: 6, source: 'c', target: 'e' } },
-    { data: { id: 'cd', weight: 2, source: 'c', target: 'd' } },
-    { data: { id: 'de', weight: 7, source: 'd', target: 'e' } }
-  ]
+const uri = 'oscilator100.json';
+const layoutOptionsB = {
+  name: 'breadthfirst',
+  fit: true, // whether to fit the viewport to the graph
+  directed: false,
+  padding: 100,
+  spacingFactor: 2.5, // 1.75 positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
+  nodeDimensionsIncludeLabels: true //, // Excludes the label when calculating node bounding boxes for the layout algorithm
+}
+/*const layoutOptionsC = {
+  name: 'cose',
+  fit: true, // whether to fit the viewport to the graph
+  directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+  spacingFactor: 6, // 1.75 positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
+  avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+  nodeDimensionsIncludeLabels: true // Excludes the label when calculating node bounding boxes for the layout algorithm
 }*/
-
-//cytoscape.use(klay)
-
-let uri = 'output.json';
 let ele = {nodes : [], edges : []};
 let nodes_in = {};
 let edges_in = {};
+let cy;
+let poda = true;
+const pruned_nodes = [];
+const pruned_edges = [];
+const weight_cut = 5;
+$('#prune').click(()=>{
+  if (poda){
+    if (pruned_edges.length === 0 && pruned_nodes.length === 0){
+      // el código de poda se tiene que ejecutar solamente una vez jeje
+      let edges = cy.edges();
+      for(let i=0; i<edges.length; i++){
+        if (edges[i].data('weight') <= weight_cut){
+          pruned_edges.push(cy.remove(edges[i]));
+        }
+      }
+      let nodes = cy.nodes();
+      for(let i=0; i<nodes.length; i++){
+        if (nodes[i].data('weight') <= weight_cut){
+          pruned_nodes.push(cy.remove(nodes[i]));
+        }
+      }
+      const root = cy.nodes().filter( (ele) => {
+        return ele.data('type') === 'root';
+      });
+      for(let i=0; i<nodes.length; i++){
+        if (nodes[i].data('type') === 'son'){
+          if (nodes[i].edgesWith(root).length == 0){
+            pruned_nodes.push(cy.remove(nodes[i]));
+          }
+        }
+        let c = nodes[i].connectedEdges();
+        if (c.length == 0){
+          pruned_nodes.push(cy.remove(nodes[i]));
+        }else if (c.length == 1 && c[0].isLoop()){
+          pruned_nodes.push(cy.remove(nodes[i]));
+        }
+      }
+    }else{
+      for(let i=0; i<pruned_nodes.length; i++){
+        cy.remove(pruned_nodes[i]);
+      }
+      for(let i=0; i<pruned_edges.length; i++){
+        cy.remove(pruned_edges[i]);
+      }    
+      poda = false;
+    }
+    cy.layout(layoutOptionsB).run();
+  }else{
+    for(let i=0; i<pruned_nodes.length; i++){
+      pruned_nodes[i].restore();
+    }
+    for(let i=0; i<pruned_edges.length; i++){
+      pruned_edges[i].restore();
+    }
+    poda = true;
+    cy.layout(layoutOptionsB).run();
+  }
+});
 $.ajax({
   url: uri, 
   success: function(result){
@@ -37,11 +89,14 @@ $.ajax({
       let cNode = undefined;
       let cEdge = undefined;
       for (let j=0; j<s.length; j++){
-        pnId = s[j].rawPattern + s[j].initX.toString() + s[j].initY.toString() + s[j].width.toString() + s[j].height.toString()
+        pnId = s[j].rawPattern + s[j].initX.toString() + s[j].initY.toString(); // + s[j].width.toString() + s[j].height.toString()
         cNode = { 
           data: { 
             id: pnId,
-            weight: 1
+            type: s[j].type,
+            weight: 1,
+            icon: result[i]+s[j].icon,
+            color: result[i].color
           }
         };
         if (nodes_in[pnId] === undefined){
@@ -57,7 +112,7 @@ $.ajax({
             edges_in[peID] = ele.edges.length;
             cEdge = { 
               data: {
-                id: peID, // decide what an ID object should be
+                id: peID, 
                 source: lastNode.data.id, 
                 target: pnId,
                 weight: 1
@@ -72,37 +127,34 @@ $.ajax({
         lastNode = cNode;
       }
     }
-    let cy = cytoscape({
+    cy = cytoscape({
       container: $('#cy'),
       boxSelectionEnabled: false,
       autounselectify: true,
       style: cytoscape.stylesheet()
         .selector('node')
           .style({
-            'content': 'data(weight)'
+            'shape': 'rectangle', // por el css hay que añadir propiedades al background image
+            'border-width': 0,
+            'background-color': 'data(color)',
+            'background-fit': 'contain',
+            'background-image': 'data(icon)'
           })
         .selector('edge')
           .style({
               'content' : 'data(weight)',
-              'curve-style': 'bezier',
               'target-arrow-shape': 'triangle',
-              'width': 4,
-              'line-color': '#ddd',
-              'target-arrow-color': '#ddd'
+              'curve-style': 'bezier',
+              'width': 4
           })
-        .selector('.highlighted')
+        /*.selector('.highlighted')
           .style({
               'background-color': '#61bffc',
               'line-color': '#61bffc',
-              'target-arrow-color': '#61bffc',
-              'transition-property': 'background-color, line-color, target-arrow-color',
-              'transition-duration': '0.5s'
-          }),
+              'target-arrow-color': '#61bffc'
+          })*/,
       elements: ele,
-      layout: {
-        name: 'breadthfirst',
-        padding: 150
-      }
+      layout: layoutOptionsB
     });
 }});
 
