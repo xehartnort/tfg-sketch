@@ -1,13 +1,13 @@
 import numpy as np
 import numexpr as ne
 #CUSTOM IMPORT
-import custom_rand as r
+import libs.custom_rand as r
 
 r.setSeed(-1)
 
 class GameOfLife:
     # TODO THIS IS ONLY FOR A FINITE BOARD
-    def __init__(self, initial_conf_file, size = 20, prob = 1):
+    def __init__(self, initial_conf_file, size = 20, prob = 1) -> None:
         # Game of Life size
         self.size = size
         self.min_x = self.size
@@ -21,7 +21,7 @@ class GameOfLife:
         self.m = initial_conf
         self.init_m = initial_conf
 
-    def _parse_row_(self, input_row):
+    def _parse_row_(self, input_row) -> list:
         run_count_str = ""
         new_row = []
         for i in range(len(input_row)):
@@ -39,7 +39,7 @@ class GameOfLife:
             run_count_str = 0
         return (new_row, int(run_count_str) if run_count_str != "" else 1)
 
-    def __load_conf__(self, filename):
+    def __load_conf__(self, filename) -> np.array:
             with open(filename, 'r') as f:
                 m = np.zeros(shape=(self.size, self.size), dtype=np.uint8)
                 raw_pattern = ""
@@ -81,7 +81,7 @@ class GameOfLife:
             current_state: cell's current state
             num_neigh: number of neighbors
     '''
-    def __transition__(self, current_state, num_neigh):
+    def __transition__(self, current_state, num_neigh) -> int:
         if r.rand() < self.prob:
             new_state = 0
             if current_state >= 1 and (num_neigh == 2 or num_neigh == 3): # survival rule
@@ -92,7 +92,7 @@ class GameOfLife:
             new_state = current_state
         return new_state
 
-    def reset(self):
+    def reset(self) -> None:
         self.min_x = self.size
         self.min_y = self.size
         self.max_x = 0
@@ -101,10 +101,10 @@ class GameOfLife:
         self.limit_reached = False # it checks if boundaries has been reached
         self.m = self.init_m
 
-    def countLife(self):
+    def countLife(self) -> int:
         return np.sum(self.m)
 
-    def getRawPattern(self, initPoint=(0,0), endPoint=None):
+    def getRawPattern(self, initPoint=(0,0), endPoint=None) -> str:
         raw_pattern = ""
         len_o = 0
         len_b = 0
@@ -133,7 +133,7 @@ class GameOfLife:
         raw_pattern += "!"
         return raw_pattern
 
-    def compute_smallest_square(self):
+    def compute_smallest_square(self) -> tuple:
         if self.new_run:
             self.new_run = False
             if np.sum(self.m) != 0:
@@ -172,13 +172,13 @@ class GameOfLife:
                 self.max_y = 0
         return (self.min_x, self.min_y, self.max_x, self.max_y)
         
-    def get_current_state(self):
+    def get_current_state(self) -> np.array:
         return self.m
         
-    def get_limit_reached(self):
+    def get_limit_reached(self) -> bool:
         return self.limit_reached
     
-    def run(self, steps=1):
+    def run(self, steps=1) -> None:
         # main loop
         for s in range(steps):
             #compute smallest square
