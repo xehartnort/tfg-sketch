@@ -7,6 +7,7 @@ import os
 import hashlib
 import argparse
 
+
 def drawLife(m, dim, name, fullMode=False):
     if fullMode:
         x1,y1,x2,y2 = dim

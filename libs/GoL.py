@@ -1,9 +1,10 @@
+
 import numpy as np
 import numexpr as ne
 #CUSTOM IMPORT
-import libs.custom_rand as r
+from libs.custom_rand import *
 
-r.setSeed(-1)
+setSeed(-1)
 
 class GameOfLife:
     # TODO THIS IS ONLY FOR A FINITE BOARD
@@ -82,7 +83,7 @@ class GameOfLife:
             num_neigh: number of neighbors
     '''
     def __transition__(self, current_state, num_neigh) -> int:
-        if r.rand() < self.prob:
+        if rand() < self.prob:
             new_state = 0
             if current_state >= 1 and (num_neigh == 2 or num_neigh == 3): # survival rule
                 new_state = 1
