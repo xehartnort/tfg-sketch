@@ -1,7 +1,7 @@
 import numpy as np
 import numexpr as ne
 #CUSTOM IMPORT
-import libs.custom_rand as r
+import custom_rand as r
 
 r.setSeed(-1)
 
