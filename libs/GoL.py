@@ -1,8 +1,11 @@
+#hacky
+import sys, os
+sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
 
 import numpy as np
 import numexpr as ne
 #CUSTOM IMPORT
-from libs.custom_rand import *
+from custom_rand import *
 
 setSeed(-1)
 
