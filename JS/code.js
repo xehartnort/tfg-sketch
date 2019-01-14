@@ -1,10 +1,9 @@
 
-const uri = 'oscilator-100-1000-105.json';
+const uri = 'oscilator-50-500-55-07.json';
 const layoutOptionsB = {
   name: 'breadthfirst',
   fit: true, // whether to fit the viewport to the graph
   directed: false,
-  padding: 100,
   spacingFactor: 2.5, // 1.75 positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
   nodeDimensionsIncludeLabels: true //, // Excludes the label when calculating node bounding boxes for the layout algorithm
 }
@@ -20,63 +19,9 @@ let ele = {nodes : [], edges : []};
 let nodes_in = {};
 let edges_in = {};
 let cy;
-let poda = true;
 const pruned_nodes = [];
 const pruned_edges = [];
 const weight_cut = 5;
-$('#prune').click(()=>{
-  if (poda){
-    if (pruned_edges.length === 0 && pruned_nodes.length === 0){
-      // el código de poda se tiene que ejecutar solamente una vez jeje
-      let edges = cy.edges();
-      for(let i=0; i<edges.length; i++){
-        if (edges[i].data('weight') <= weight_cut){
-          pruned_edges.push(cy.remove(edges[i]));
-        }
-      }
-      let nodes = cy.nodes();
-      for(let i=0; i<nodes.length; i++){
-        if (nodes[i].data('weight') <= weight_cut){
-          pruned_nodes.push(cy.remove(nodes[i]));
-        }
-      }
-      const root = cy.nodes().filter( (ele) => {
-        return ele.data('type') === 'root';
-      });
-      for(let i=0; i<nodes.length; i++){
-        if (nodes[i].data('type') === 'son'){
-          if (nodes[i].edgesWith(root).length == 0){
-            pruned_nodes.push(cy.remove(nodes[i]));
-          }
-        }
-        let c = nodes[i].connectedEdges();
-        if (c.length == 0){
-          pruned_nodes.push(cy.remove(nodes[i]));
-        }else if (c.length == 1 && c[0].isLoop()){
-          pruned_nodes.push(cy.remove(nodes[i]));
-        }
-      }
-    }else{
-      for(let i=0; i<pruned_nodes.length; i++){
-        cy.remove(pruned_nodes[i]);
-      }
-      for(let i=0; i<pruned_edges.length; i++){
-        cy.remove(pruned_edges[i]);
-      }    
-      poda = false;
-    }
-    cy.layout(layoutOptionsB).run();
-  }else{
-    for(let i=0; i<pruned_nodes.length; i++){
-      pruned_nodes[i].restore();
-    }
-    for(let i=0; i<pruned_edges.length; i++){
-      pruned_edges[i].restore();
-    }
-    poda = true;
-    cy.layout(layoutOptionsB).run();
-  }
-});
 $.ajax({
   url: uri, 
   success: function(result){
@@ -95,7 +40,7 @@ $.ajax({
             id: pnId,
             type: s[j].type,
             weight: 1,
-            icon: result[i]+s[j].icon,
+            icon: result[i].simulationIconPath+s[j].icon,
             color: result[i].color
           }
         };
@@ -128,23 +73,28 @@ $.ajax({
       }
     }
     cy = cytoscape({
+      hideLabelsOnViewport: true,
+      // interpolate on high density displays instead of increasing resolution
+      pixelRatio: 1,
+      // a motion blur effect that increases perceived performance for little or no cost
+      motionBlur: true,
       container: $('#cy'),
       boxSelectionEnabled: false,
       autounselectify: true,
       style: cytoscape.stylesheet()
         .selector('node')
           .style({
-            'shape': 'rectangle', // por el css hay que añadir propiedades al background image
+            'shape': 'rectangle',
             'border-width': 0,
-            'background-color': 'data(color)',
             'background-fit': 'contain',
             'background-image': 'data(icon)'
           })
         .selector('edge')
           .style({
+              'opacity': '0.5',
               'content' : 'data(weight)',
               'target-arrow-shape': 'triangle',
-              'curve-style': 'bezier',
+              'curve-style': 'haystack',
               'width': 4
           })
         /*.selector('.highlighted')
@@ -155,6 +105,55 @@ $.ajax({
           })*/,
       elements: ele,
       layout: layoutOptionsB
+    });
+    if (pruned_edges.length === 0 && pruned_nodes.length === 0){
+      let edges = cy.edges();
+      for(let i=0; i<edges.length; i++){
+        if (edges[i].data('weight') <= weight_cut){
+          pruned_edges.push(cy.remove(edges[i]));
+        }
+      }
+      let nodes = cy.nodes();
+      for(let i=0; i<nodes.length; i++){
+        if (nodes[i].data('weight') <= weight_cut){
+          pruned_nodes.push(cy.remove(nodes[i]));
+        }
+      }
+      const root = cy.nodes().filter( (ele) => {
+        return ele.data('type') === 'root';
+      });
+      for(let i=0; i<nodes.length; i++){
+        if (nodes[i].data('type') === 'son'){
+          if (nodes[i].edgesWith(root).length == 0){
+            pruned_nodes.push(cy.remove(nodes[i]));
+          }
+        }
+        let c = nodes[i].connectedEdges();
+        if (c.length == 0){
+          pruned_nodes.push(cy.remove(nodes[i]));
+        }else if (c.length == 1 && c[0].isLoop()){
+          pruned_nodes.push(cy.remove(nodes[i]));
+        }
+      }
+    }
+    cy.layout(layoutOptionsB).run();
+    $('#prune').click(()=>{
+      if (pruned_edges[0].removed()){
+        for(let i=0; i<pruned_nodes.length; i++){
+          pruned_nodes[i].restore();
+        }
+        for(let i=0; i<pruned_edges.length; i++){
+          pruned_edges[i].restore();
+        }   
+      }else{
+        for(let i=0; i<pruned_nodes.length; i++){
+          cy.remove(pruned_nodes[i]);
+        }
+        for(let i=0; i<pruned_edges.length; i++){
+          cy.remove(pruned_edges[i]);
+        } 
+      }
+      cy.layout(layoutOptionsB).run();
     });
 }});
 

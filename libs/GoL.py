@@ -137,32 +137,32 @@ class GameOfLife:
         if self.new_run:
             self.new_run = False
             if np.sum(self.m) != 0:
-                self.min_y = 0
-                while np.sum(self.m[self.min_y]) == 0:
-                    self.min_y += 1
-                if self.min_y != 0:
-                    self.min_y -= 1
-                else:
-                    self.limit_reached = True
-                self.max_y = self.size-1
-                while np.sum(self.m[self.max_y]) == 0:
-                    self.max_y -= 1
-                if self.max_y != self.size-1:
-                    self.max_y += 1
-                else:
-                    self.limit_reached = True
                 self.min_x = 0
-                while np.sum(self.m[:,self.min_x]) == 0:
-                    self.min_x +=1
-                if self.min_x != 0: 
+                while np.sum(self.m[self.min_x]) == 0:
+                    self.min_x += 1
+                if self.min_x != 0:
                     self.min_x -= 1
                 else:
                     self.limit_reached = True
                 self.max_x = self.size-1
-                while np.sum(self.m[:,self.max_x]) == 0:
+                while np.sum(self.m[self.max_x]) == 0:
                     self.max_x -= 1
                 if self.max_x != self.size-1:
                     self.max_x += 1
+                else:
+                    self.limit_reached = True
+                self.min_y = 0
+                while np.sum(self.m[:,self.min_y]) == 0:
+                    self.min_y +=1
+                if self.min_y != 0: 
+                    self.min_y -= 1
+                else:
+                    self.limit_reached = True
+                self.max_y = self.size-1
+                while np.sum(self.m[:,self.max_y]) == 0:
+                    self.max_y -= 1
+                if self.max_y != self.size-1:
+                    self.max_y += 1
                 else:
                     self.limit_reached = True
             else:
@@ -180,8 +180,6 @@ class GameOfLife:
     
     def run(self, steps=1):
         # main loop
-        self.new_run = True
-        # Store in a dict previously computed states,
         for s in range(steps):
             #compute smallest square
             self.compute_smallest_square()
@@ -206,3 +204,4 @@ class GameOfLife:
                     for j in range(self.min_y, self.max_y+1):
                         m_next[i,j] = self.__transition__(self.m[i,j], m2[i,j])
                 self.m = m_next
+        self.new_run = True
