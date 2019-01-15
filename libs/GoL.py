@@ -1,7 +1,3 @@
-#hacky
-import sys, os
-sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
-
 import numpy as np
 import numexpr as ne
 #CUSTOM IMPORT
@@ -209,3 +205,73 @@ class GameOfLife:
                         m_next[i,j] = self.__transition__(self.m[i,j], m2[i,j])
                 self.m = m_next
         self.new_run = True
+
+from collections import Counter
+
+class GameOfLife_boardless:
+    # TODO THIS IS ONLY FOR A FINITE BOARD
+    def __init__(self, initial_conf_file, prob = 1) -> None:
+        self.prob = prob
+        self.init_world = self.__load_conf__(initial_conf_file)
+        self.current_world = self.init_world
+
+    def __load_conf__(self, filename) -> list:
+            with open(filename, 'r') as f:
+                world = []
+                lines = f.readlines()
+                self.name = lines[0]
+                for l in lines[1:]:
+                    x, y = l.split()
+                    world.append((int(x),int(y)))
+                return world
+
+    def reset(self) -> None:
+        self.current_world = self.init_world
+
+    def countLife(self) -> int:
+        return len(self.current_world)
+
+    def getWorld(self) -> list:
+        return self.current_world
+
+    def display(self) -> None:
+        "Display the world as a grid of characters."
+        Xs, Ys = zip(*self.current_world)
+        Xrange = range(min(Xs), max(Xs)+1)
+        for y in range(min(Ys), max(Ys)+1):
+            print(''.join('#' if (x, y) in self.current_world else '.' for x in Xrange))
+
+    def __transition__(self, alive, num_neigh) -> bool:
+        '''
+            alive: it states if the cell is alive or not
+            int num_neigh: number of neighbors
+        '''
+        if rand() < self.prob:
+            if (alive and num_neigh == 2) or num_neigh == 3: # survival rule
+                alive = True
+            else:
+                alive = False
+        return alive
+
+    def run(self, steps=1) -> None:
+        # main loop
+        for s in range(steps):
+            counts = Counter(n for cell in self.current_world for n in offset(cell))
+            new_world = set()
+            for cell in counts:
+                if self.__transition__(cell in self.current_world, counts[cell]):
+                    new_world.add(cell)
+            self.current_world = new_world
+
+            #self.current_world = {c for c in counts 
+            #        if counts[c] == 3 or (counts[c] == 2 and c in self.current_world)}
+
+neighboring_cells = np.array([
+    (-1, 1), (0, 1), (1, 1), 
+    (-1, 0),         (1, 0), 
+    (-1,-1), (0,-1), (1,-1)
+])
+def offset(delta) -> dict:
+    "Slide/offset all the cells by delta, a (dx, dy) vector."
+    (dx, dy) = delta
+    return {(x+dx, y+dy) for (x, y) in neighboring_cells}

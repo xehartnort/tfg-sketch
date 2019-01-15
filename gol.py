@@ -8,7 +8,7 @@ import hashlib
 import argparse
 
 
-def drawLife(m, dim, name, fullMode=False):
+def drawLife(m, dim, name, fullMode=False) -> None:
     if fullMode:
         x1,y1,x2,y2 = dim
         w = m.shape[0]
@@ -30,7 +30,7 @@ def drawLife(m, dim, name, fullMode=False):
     img = img.resize((w*5,h*5)) # key?
     img.save(name)
 
-def gen_colors(number_of_runs):
+def gen_colors(number_of_runs) -> list:
     axis_range = pow(number_of_runs, 1/3)
     gap_size = ceil(255/axis_range)
     axis_range = ceil(axis_range)
@@ -53,7 +53,7 @@ parser.add_argument("-ss", default=100, type=int, dest="state_size", help='State
 parser.add_argument("-nr", default=1000, type=int, dest="number_of_runs", help='Number of runs')
 parser.add_argument("-rs", default=105, type=int, dest="run_steps", help="Run steps")
 parser.add_argument("-ip", default='icons', type=str, dest="icon_path", help="Icon path")
-parser.add_argument("-f", default=None, type=str, dest="inputFile", help="File which contains the first state of every run" )
+parser.add_argument("-i", default=None, type=str, dest="inputFile", help="File which contains the first state of every run" )
 parser.add_argument("-o", default='default.json', type=str, dest="outputFile", help="Output file, the format is JSON, so it is expected to end with .json" )
 args = parser.parse_args(sys.argv[1:])
 file_path = args.inputFile #"/home/xehartnort/Escritorio/Trabajo/tfg-sketch/patterns/oscilator.rle"
@@ -71,24 +71,25 @@ number_of_runs = args.number_of_runs
 state_size = args.state_size
 run_prob = args.run_prob
 ### END SIMULATION PARAMETERS ###
-# we will deal with this object
 gol = GameOfLife(file_path, size=state_size, prob=run_prob)
 # Generate as many colors as simulations
 colors = gen_colors(number_of_runs)
-experiment = {'pattern':sim_name, 
-        'stateSize': state_size, 
-        'runProb': run_prob,
-        'runSteps': run_steps,
-        'NumberOfruns': number_of_runs,
-        'iconPath': icon_path,
-        'runs': []}
+experiment = {
+    'pattern': sim_name, 
+    'stateSize': state_size, 
+    'runProb': run_prob,
+    'runSteps': run_steps,
+    'NumberOfruns': number_of_runs,
+    'iconPath': icon_path,
+    'runs': []
+}
 preComputedIds = {}
 for j in range(number_of_runs):
     run = {
-            'runNumber': j+1,
-            'color' : colors[j],
-            'steps':[]
-        }
+        'runNumber': j+1,
+        'color' : colors[j],
+        'steps':[]
+    }
     x1, y1, x2, y2 = gol.compute_smallest_square()
     rle_pattern = gol.getRawPattern(initPoint=(x1,y1),endPoint=(x2,y2))
     id_b = bytes(rle_pattern+str(x1)+","+str(y1), 'utf-8')
@@ -140,11 +141,9 @@ for j in range(number_of_runs):
         run['steps'].append(step)
     gol.reset()
     experiment['runs'].append(run)
-
 # Write output
 with open(args.outputFile, 'w+') as outfile:
     json.dump(experiment, outfile)
-    
 
 # Escenario 1
 # Cada celula lanza un dado, se decide si se aplican o no las reglas
