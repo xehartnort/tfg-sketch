@@ -2,8 +2,9 @@ import numpy as np
 import numexpr as ne
 #CUSTOM IMPORT
 from libs.custom_rand import *
+import time as t
 
-setSeed(-1)
+setSeed(-1*int(t.time()))
 
 class GameOfLife:
     # TODO THIS IS ONLY FOR A FINITE BOARD
@@ -266,11 +267,11 @@ class GameOfLife_boardless:
             #self.current_world = {c for c in counts 
             #        if counts[c] == 3 or (counts[c] == 2 and c in self.current_world)}
 
-neighboring_cells = np.array([
+neighboring_cells = [
     (-1, 1), (0, 1), (1, 1), 
     (-1, 0),         (1, 0), 
     (-1,-1), (0,-1), (1,-1)
-])
+]
 def offset(delta) -> dict:
     "Slide/offset all the cells by delta, a (dx, dy) vector."
     (dx, dy) = delta
