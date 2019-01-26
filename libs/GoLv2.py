@@ -1,7 +1,7 @@
 #CUSTOM IMPORTS
 import libs.utils as utils
 import time as t
-
+from copy import copy
 utils.setSeed(-1*int(t.time()))
 
 class GameOfLife:
@@ -33,23 +33,28 @@ class GameOfLife:
     def display(self) -> None:
         "Display the world as a grid of characters."
         Xs, Ys = zip(*self.current_world)
-        Xrange = range(min(Xs), max(Xs)+1)
-        for y in range(min(Ys), max(Ys)+1):
-            print(''.join('#' if (x, y) in self.current_world else '.' for x in Xrange))
+        Xrange = range(min(Xs)-1, max(Xs)+2)
+        for y in range(min(Ys)-1, max(Ys)+2):
+            print(''.join('#' if (x, y) in self.current_world else '·' for x in Xrange))
 
     def run(self, steps=1) -> None:
         self.current_world = utils.__run__(self.current_world, self.prob, steps)
+
+    def computeClusters(self) -> list:
+        return utils.computeClusters(self.current_world)
 
 '''
 neighboring_cells = [
     (-1, 1), (0, 1), (1, 1), 
     (-1, 0),         (1, 0), 
-    (-1,-1), (0,-1), (1,-1)
-]
-def offset(delta, neighboring_cells) -> dict:
+    (-1,-1), (0,-1), (1,-1)]
+
+
+def getNeighborhood(delta) -> dict:
     "Slide/offset all the cells by delta, a (dx, dy) vector."
     (dx, dy) = delta
     return {(x+dx, y+dy) for (x, y) in neighboring_cells}
+
 
     def __transition__(self, alive, num_neigh) -> bool:
         if rand() < self.prob:

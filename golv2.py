@@ -9,9 +9,9 @@ if __name__ == "__main__":
     description = "So far I don't know what should I write here"
     parser = argparse.ArgumentParser(description)
     parser.add_argument("-n", default="default", type=str, dest="sim_name", help='Simulation name')
-    parser.add_argument("-p", default=0.9, type=float, dest="run_prob", help='Probability of applying current rules in each run')
-    parser.add_argument("-nr", default=10000, type=int, dest="number_of_runs", help='Number of runs')
-    parser.add_argument("-rs", default=100, type=int, dest="run_steps", help="Run steps")
+    parser.add_argument("-p", default=1, type=float, dest="run_prob", help='Probability of applying current rules in each run')
+    parser.add_argument("-nr", default=1, type=int, dest="number_of_runs", help='Number of runs')
+    parser.add_argument("-rs", default=10, type=int, dest="run_steps", help="Run steps")
     #parser.add_argument("-ip", default='icons', type=str, dest="icon_path", help="Icon path")
     parser.add_argument("-i", default='a', type=str, dest="inputFile", help="File which contains the first state of every run" )
     parser.add_argument("-o", default='default.json', type=str, dest="outputFile", help="Output file, the format is JSON, so it is expected to end with .json" )
@@ -48,7 +48,12 @@ if __name__ == "__main__":
         run['steps'].append(step)
         for j in range(1,runSteps+1):
             gol.run()
-            id_node = hashlib.blake2s(bytes(str(gol.getWorld()), 'utf-8')).hexdigest()
+            clusters = gol.computeClusters()
+            # cluster postprocess
+            normClusters = list()
+
+
+            id_node = hashlib.sha1(bytes(str(gol.getWorld()), 'utf-8')).hexdigest()
             step = { 
                 'id' : id_node,
                 'type' : 'node', 
