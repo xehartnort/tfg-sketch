@@ -12,7 +12,6 @@ if __name__ == "__main__":
     parser.add_argument("-p", default=1, type=float, dest="run_prob", help='Probability of applying current rules in each run')
     parser.add_argument("-nr", default=1, type=int, dest="number_of_runs", help='Number of runs')
     parser.add_argument("-rs", default=10, type=int, dest="run_steps", help="Run steps")
-    #parser.add_argument("-ip", default='icons', type=str, dest="icon_path", help="Icon path")
     parser.add_argument("-i", default='a', type=str, dest="inputFile", help="File which contains the first state of every run" )
     parser.add_argument("-o", default='default.json', type=str, dest="outputFile", help="Output file, the format is JSON, so it is expected to end with .json" )
     args = parser.parse_args(sys.argv[1:])
@@ -48,11 +47,9 @@ if __name__ == "__main__":
         run['steps'].append(step)
         for j in range(1,runSteps+1):
             gol.run()
-            clusters = gol.computeClusters()
+            clusters = gol.computeRleClusters()
             # cluster postprocess
-            normClusters = list()
-
-
+            print(clusters)
             id_node = hashlib.sha1(bytes(str(gol.getWorld()), 'utf-8')).hexdigest()
             step = { 
                 'id' : id_node,

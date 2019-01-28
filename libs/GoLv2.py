@@ -29,19 +29,12 @@ class GameOfLife:
 
     def getWorld(self) -> list:
         return self.current_world
-
-    def display(self) -> None:
-        "Display the world as a grid of characters."
-        Xs, Ys = zip(*self.current_world)
-        Xrange = range(min(Xs)-1, max(Xs)+2)
-        for y in range(min(Ys)-1, max(Ys)+2):
-            print(''.join('#' if (x, y) in self.current_world else '·' for x in Xrange))
-
+        
     def run(self, steps=1) -> None:
         self.current_world = utils.__run__(self.current_world, self.prob, steps)
 
-    def computeClusters(self) -> list:
-        return utils.computeClusters(self.current_world)
+    def computeRleClusters(self) -> list:
+        return utils.computeRleClusters(self.current_world)
 
 '''
 neighboring_cells = [
