@@ -35,7 +35,7 @@ def offset (delta) -> set:
     (dx, dy) = delta
     return {(x+dx, y+dy) for (x, y) in neighboring_cells}
 
-def computeClusters (current_world) -> set:
+def computeClusters (current_world) -> list:
     '''
         Compute clusters in current_world and return them in a list in rle format
     '''
