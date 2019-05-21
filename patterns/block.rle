@@ -1,3 +1,4 @@
+#CXRLE Pos=-3,-2
 #N Block
-x = 2, y= 2
-oo$oo!
+x = 4, y = 4, rule = B3/S23
+4b$b2ob$b2ob$4b!
