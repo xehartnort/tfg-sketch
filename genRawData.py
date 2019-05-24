@@ -25,7 +25,7 @@ if __name__ == "__main__":
     number_of_runs = args.number_of_runs
     run_prob = args.run_prob
     ### END SIMULATION PARAMETERS ###
-    gol = GameOfLife(file_path, prob=run_prob)
+    gol = GameOfLife(file_path, prob=run_prob, seed=0.5)
     experiment = {
         'pattern': simName, 
         'runProb': run_prob,

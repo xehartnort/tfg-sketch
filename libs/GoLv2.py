@@ -1,15 +1,14 @@
 #CUSTOM IMPORTS
 import libs.utils as utils
 import time as t
+import random
 
 from PIL import Image, ImageDraw, ImageOps
 
-#replace this one with python rand
-utils.setSeed(-1*int(t.time()))
-
 class GameOfLife:
 
-    def __init__(self, initial_conf_file, prob = 1) -> None:
+    def __init__(self, initial_conf_file, seed, prob = 1) -> None:
+        random.seed(seed)
         self.prob = prob
         self.__load_conf__(initial_conf_file)
 
@@ -67,8 +66,6 @@ class GameOfLife:
                     elif not line.startswith('#'):
                         raw_pattern += line.strip(" \n\r\t")
                 # we fill the first cuadrant
-                self.width = width
-                self.height = height
                 rows = raw_pattern.split("$")
                 assert len(rows) <= height
                 row_pos = 0
@@ -81,10 +78,6 @@ class GameOfLife:
     @property
     def currentWorld(self) -> set:
         return self.current_world
-    
-    @property
-    def dim(self)-> tuple:
-        return (self.width, self.height)
 
     def reset(self) -> None:
         self.current_world = self.init_world
@@ -93,23 +86,25 @@ class GameOfLife:
         return len(self.current_world)
 
     def run(self, steps=1) -> None:
-        self.current_world = utils.__run__(self.current_world, self.prob, steps)
+        self.current_world, randstate = utils.__run__(self.current_world, self.prob, steps, random.getstate())
+        random.setstate(randstate)
 
     def computeClusters(self) -> list:
         return utils.computeClusters(self.current_world)
 
-    def __generate_squares__(self, image_width, image_height, side_length) -> list:
-        """Generate coordinates for a tiling of unit squares."""
-        for x in range(image_width):
-            for y in range(image_height):
-                yield [(x * side_length, y * side_length) for (x, y) in [(x, y), (x + 1, y + 1)]]
-
-    def draw(self, side_length) -> Image:
-        im = Image.new('L', size=(self.width*side_length, self.height*side_length))
+    def draw(self, side_length=30) -> None:
+        Xs, Ys = zip(*self.current_world)
+        minx, maxx, miny, maxy = min(Xs), max(Xs), min(Ys), max(Ys)
+        height = maxy - miny + 1 + 2 
+        width = maxx - minx + 1 + 2
+        im = Image.new('L', size=(width*side_length, height*side_length))
         im = ImageOps.expand(im, border = 1, fill="#C6C6C6")
-        for square in self.__generate_squares__(self.width, self.height, side_length):
-            if (square[0][0]/side_length, square[0][1]/side_length) in self.current_world:
-                ImageDraw.Draw(im).rectangle(square, outline="#C6C6C6", width = 2, fill="black")
-            else:
-                ImageDraw.Draw(im).rectangle(square, outline="#C6C6C6", width = 2, fill="white")
+        for y in range(miny-2, maxy+2):
+            for x in range(minx-2, maxx+2):
+                square = [(x+1-minx)* side_length, (y+1-miny)* side_length, (x+2-minx)* side_length, (y+2-miny)* side_length]
+                if (x, y) in self.current_world:
+                    fillColor = "black"
+                else: 
+                    fillColor = "white"
+                ImageDraw.Draw(im).rectangle(square, outline="#C6C6C6", width = 2, fill=fillColor)
         return im
