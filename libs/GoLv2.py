@@ -7,12 +7,16 @@ from PIL import Image, ImageDraw, ImageOps
 
 class GameOfLife:
 
-    def __init__(self, initial_conf_file, seed, prob = 1) -> None:
+    def __init__(self, seed=1, initial_conf_file=None, world={}, prob = 1) -> None:
+        self.seed = seed
         random.seed(seed)
         self.prob = prob
-        self.__load_conf__(initial_conf_file)
+        if initial_conf_file:
+            self.__load_conf__(initial_conf_file)
+        else:
+            self.init_world = world
+            self.current_world = world
 
-# Adapt this, so that .rle files can be input
     def _parse_row_(self, row_pos, input_row) -> list:
         run_count_str = ""
         cells = set()
@@ -78,6 +82,15 @@ class GameOfLife:
     @property
     def currentWorld(self) -> set:
         return self.current_world
+    
+    def getSeed(self) -> int:
+        return self.seed
+    
+    def hashify(self) -> str:
+        return utils._hashify_(self.current_world)
+        
+#    def resetTo(self, world) -> None:
+#        self.current_world = world
 
     def reset(self) -> None:
         self.current_world = self.init_world

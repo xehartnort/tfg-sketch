@@ -1,12 +1,16 @@
 from collections import Counter
 from re import sub
 import random
+import hashlib
 
 neighboring_cells = [
     (-1, 1), (0, 1), (1, 1), 
     (-1, 0),         (1, 0), 
     (-1,-1), (0,-1), (1,-1)
 ]
+
+def _hashify_(world) -> str:
+    return hashlib.sha1 (bytes (str (world), 'utf-8')).hexdigest()
 
 def offset (delta) -> set:
     "Slide/offset all the cells by delta, a (dx, dy) vector."
