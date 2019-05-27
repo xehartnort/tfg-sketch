@@ -13,81 +13,43 @@ if not os.path.exists(outDir):
     os.makedirs(outDir)
 if outDir[-1] != '/':
     outDir += '/'
-for i in inList:
-    if not os.path.isfile(i):
+for fil in inList:
+    if not os.path.isfile(fil):
         print("Error: File supplied is not a file or it does not exist")
         exit(-1)
-    filename = i.split('/')[-1]
+    filename = fil.split('/')[-1]
     ncell_estimator = dict()
     ncluster_estimator = dict()
     pos_estimator = dict()
     ncell_cluster_estimator = dict()
     clusters_estimator = dict()
-    with open(i, 'r') as fil:
-        data = json.load(fil)
-        runs = data['runs']
-        for r in runs:
-            steps = r['steps']
-            runNumber = r['runNumber']
-            if runNumber not in clusters_estimator:
-                clusters_estimator[runNumber] = set()
-            # Per Step
-            for s in steps:
-                # ncell_estimation
-                if s['step'] not in ncell_estimator:
-                    ncell_estimator[s['step']] = []
-                ncell_estimator[s['step']].append(s['ncells'])
-                # ncluster_estimation
-                if s['step'] not in ncluster_estimator:
-                    ncluster_estimator[s['step']] = []
-                ncluster_estimator[s['step']].append(len(s['clusters']))
-                # pos_estimation and ncell_cluster_estimation
-                if s['step'] not in pos_estimator:
-                    pos_estimator[s['step']] = []
-                if s['step'] not in ncell_cluster_estimator:
-                    ncell_cluster_estimator[s['step']] = []
-                for c in s['clusters']:
-                    pos_estimator[s['step']].append(c['center'])
-                    ncell_cluster_estimator[s['step']].append(c['ncells'])
-                    clusters_estimator[runNumber].add(c['rleEncondig'])
-        stats = {
-            'NumberOfCellsPerStep': {
-                'mean': [],
-                'std': []
-            }, 
-            'NumberOfCellsPerClusterPerStep': {
-                'mean': [],
-                'std': []
-            },
-            'NumberOfClustersPerStep': {
-                'mean': [],
-                'std': []
-            },
-            'NumberOfDifClustersPerRun': {
-                'mean': [],
-                'std': []
-            }
-        }
-        # Stats per step
-        for k in range(data['runSteps']+1):
-            ncell_estimator[k] = np.array(ncell_estimator[k], dtype=np.int64)
-            ncluster_estimator[k] = np.array(ncluster_estimator[k], dtype=np.int64)
-            ncell_cluster_estimator[k] = np.array(ncell_cluster_estimator[k], dtype=np.int64)
-            stats['NumberOfCellsPerStep']['mean'].append( 
-                ncell_estimator[k].mean() )
-            stats['NumberOfCellsPerStep']['std'].append( 
-                ncell_estimator[k].std()/math.sqrt(len(ncell_estimator[k])) )
-            stats['NumberOfCellsPerClusterPerStep']['mean'].append( 
-                ncell_cluster_estimator[k].mean() )
-            stats['NumberOfCellsPerClusterPerStep']['std'].append( 
-                ncell_cluster_estimator[k].std()/math.sqrt(len(ncell_cluster_estimator[k])) )
-            stats['NumberOfClustersPerStep']['mean'].append( 
-                ncluster_estimator[k].mean() )
-            stats['NumberOfClustersPerStep']['std'].append( 
-                ncluster_estimator[k].std()/math.sqrt(len(ncluster_estimator[k])) )
-        # Stats per run
-        clustersPerRun = np.array([len(clusters_estimator[k]) for k in range(data['NumberOfruns'])], dtype=np.uint64)
-        stats['NumberOfDifClustersPerRun']['mean'].append(clustersPerRun.mean())
-        stats['NumberOfDifClustersPerRun']['std'].append(clustersPerRun.std()/math.sqrt(len(clustersPerRun)))
-        with open(outDir+filename[:-5]+'_stats.json', 'w+') as out:
-            json.dump(stats, out, indent=1)
+    with open(fil, 'r') as fileIn:
+        data = json.load(fileIn)
+        runs_data = data['runs']
+        number_of_runs = data['NumberOfruns']
+        # csv like style
+        # each element contains (run_number, mean, std)
+        nclusters_estimator = [] 
+        heat_estimator = []
+        ncells_estimator = []
+        with open("{}_{}_nclusters.data".format(data['pattern'], data['runProb']), 'w+') as nclusters:
+            with open("{}_{}_ncells.data".format(data['pattern'], data['runProb']), 'w+') as ncells:
+                with open("{}_{}_heat.data".format(data['pattern'], data['runProb']), 'w+') as heat:
+                    #nclusters.write("{}\t{}\t{}\n".format("run_number", "mean", "std"))
+                    #ncells.write("{}\t{}\t{}\n".format("run_number", "mean", "std"))
+                    #heat.write("{}\t{}\t{}\n".format("run_number", "mean", "std"))
+                    for index, run in enumerate(runs_data):
+                        nclusters_mean = sum([i['nclusters']*i['ocurrences'] for i in run]) / number_of_runs
+                        ncells_mean = sum([i['ncells']*i['ocurrences'] for i in run]) / number_of_runs
+                        heat_mean = sum([i['heat']*i['ocurrences'] for i in run]) / number_of_runs
+                        ############################################################################## MAL MAL MAL MAL Y MAL
+                        nclusters_squared_mean = sum([i['nclusters']**2 for i in run for j in range(i['ocurrences'])]) / number_of_runs
+                        ncells_squared_mean = sum([i['ncells']**2 for i in run for j in range(i['ocurrences'])]) / number_of_runs
+                        heat_squared_mean = sum([i['heat']**2 for i in run for j in range(i['ocurrences'])]) / number_of_runs
+                        #######################################################################################
+                        nclusters_std = math.sqrt((nclusters_squared_mean - nclusters_mean**2)/number_of_runs)
+                        ncells_std = math.sqrt((ncells_squared_mean - ncells_mean**2)/number_of_runs)
+                        heat_std = math.sqrt((heat_squared_mean - heat_mean**2)/number_of_runs)
+                        nclusters.write("{}\t{}\t{}\n".format(index, nclusters_mean, 3*nclusters_std))
+                        ncells.write("{}\t{}\t{}\n".format(index, ncells_mean, 3*ncells_std))
+                        heat.write("{}\t{}\t{}\n".format(index, heat_mean, 3*heat_std))

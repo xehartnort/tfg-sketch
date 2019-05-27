@@ -71,6 +71,6 @@ if __name__ == "__main__":
 
     # Write output
     with open(args.outputFile, 'w+') as outfile:
-        json.dump(experiment, outfile, indent=1)
+        json.dump(experiment, outfile, indent=2)
 
 
