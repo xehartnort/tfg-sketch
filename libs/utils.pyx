@@ -61,7 +61,10 @@ def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
         int num_neigh: number of neighbors
     '''
     if rand < prob:
-        alive = (alive and num_neigh == 2) or num_neigh == 3
+        if (alive and num_neigh == 2) or num_neigh == 3:
+            alive = True
+        else:
+            alive = False
     return alive
 
 def __run__ (current_world, prob, unsigned int steps, randstate) -> set:

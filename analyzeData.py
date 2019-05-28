@@ -1,5 +1,8 @@
 import sys, json, math, os, argparse
 import numpy as np
+from scipy.stats import shapiro
+from scipy.stats import normaltest
+from multiprocessing import Pool
 
 ### BEGIN SIMULATION PARAMETERS ###
 description = "If you think about a processing pipeline, this part does the math"
@@ -28,28 +31,48 @@ for fil in inList:
         runs_data = data['runs']
         number_of_runs = data['NumberOfruns']
         # csv like style
-        # each element contains (run_number, mean, std)
+        # each element contains (run_number, mean, 3*std)
         nclusters_estimator = [] 
         heat_estimator = []
         ncells_estimator = []
+        def computeStats(values):
+            length = len(values)
+            mean = sum(values) / length
+            squared_mean = sum([i**2 for i in values]) / length
+            values_std = math.sqrt((squared_mean - mean**2)/number_of_runs)
+            accumulated = [sum(values[:i])/i for i in range(1, length+1)]
+            i = 100
+            w, p_value = normaltest(accumulated[i:])
+            try:
+                while p_value < 0.05:
+                    w, p_value = normaltest(accumulated[i:])
+                    i += 10
+                    if length-i <20:
+                        p_value = 0
+                        break
+                    
+            except:
+                p_value = 0
+            return (i, p_value, mean, values_std)
+
+    
         with open("{}_{}_nclusters.data".format(data['pattern'], data['runProb']), 'w+') as nclusters:
             with open("{}_{}_ncells.data".format(data['pattern'], data['runProb']), 'w+') as ncells:
                 with open("{}_{}_heat.data".format(data['pattern'], data['runProb']), 'w+') as heat:
-                    #nclusters.write("{}\t{}\t{}\n".format("run_number", "mean", "std"))
-                    #ncells.write("{}\t{}\t{}\n".format("run_number", "mean", "std"))
-                    #heat.write("{}\t{}\t{}\n".format("run_number", "mean", "std"))
-                    for index, run in enumerate(runs_data):
-                        nclusters_mean = sum([i['nclusters']*i['ocurrences'] for i in run]) / number_of_runs
-                        ncells_mean = sum([i['ncells']*i['ocurrences'] for i in run]) / number_of_runs
-                        heat_mean = sum([i['heat']*i['ocurrences'] for i in run]) / number_of_runs
-                        ############################################################################## MAL MAL MAL MAL Y MAL
-                        nclusters_squared_mean = sum([i['nclusters']**2 for i in run for j in range(i['ocurrences'])]) / number_of_runs
-                        ncells_squared_mean = sum([i['ncells']**2 for i in run for j in range(i['ocurrences'])]) / number_of_runs
-                        heat_squared_mean = sum([i['heat']**2 for i in run for j in range(i['ocurrences'])]) / number_of_runs
-                        #######################################################################################
-                        nclusters_std = math.sqrt((nclusters_squared_mean - nclusters_mean**2)/number_of_runs)
-                        ncells_std = math.sqrt((ncells_squared_mean - ncells_mean**2)/number_of_runs)
-                        heat_std = math.sqrt((heat_squared_mean - heat_mean**2)/number_of_runs)
-                        nclusters.write("{}\t{}\t{}\n".format(index, nclusters_mean, 3*nclusters_std))
-                        ncells.write("{}\t{}\t{}\n".format(index, ncells_mean, 3*ncells_std))
-                        heat.write("{}\t{}\t{}\n".format(index, heat_mean, 3*heat_std))
+                    #nclusters.write("{}\t{}\t{}\n".format("run_number", "mean", "3std", "p-value"))
+                    #ncells.write("{}\t{}\t{}\n".format("run_number", "mean", "3std", "p-value"))
+                    #heat.write("{}\t{}\t{}\n".format("run_number", "mean", "3std", "p-value"))
+                    with Pool(processes=3) as p:
+                        for index, run in enumerate(runs_data):
+                            heat_values = []
+                            nclusters_values = []
+                            ncells_values = []
+                            for i in run:
+                                for j in range(i['ocurrences']):
+                                    heat_values.append(i['heat'])
+                                    nclusters_values.append(i['nclusters'])
+                                    ncells_values.append(i['ncells'])
+                            r = p.map(computeStats, [heat_values, nclusters_values, ncells_values])#, ncells_values, nclusters])
+                            nclusters.write("{}\t{}\t{}\t{}\t{}\n".format(index, r[2][2], 3*r[2][3], r[2][1], r[2][0]))
+                            ncells.write("{}\t{}\t{}\t{}\t{}\n".format(index, r[1][2], 3*r[1][3], r[1][1], r[1][0]))
+                            heat.write("{}\t{}\t{}\t{}\t{}\n".format(index, r[0][2], 3*r[0][3], r[0][1], r[0][0]))
