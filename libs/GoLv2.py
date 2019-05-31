@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageOps
 
 class GameOfLife:
 
-    def __init__(self, seed=1, initial_conf_file=None, world={}, prob = 1) -> None:
+    def __init__(self, seed=1, initial_conf_file=None, world={}, prob = 1):
         self.seed = seed
         random.seed(seed)
         self.prob = prob
@@ -17,7 +17,7 @@ class GameOfLife:
             self.init_world = world
             self.current_world = world
 
-    def _parse_row_(self, row_pos, input_row) -> list:
+    def _parse_row_(self, row_pos, input_row):
         run_count_str = ""
         cells = set()
         row_length = len(input_row)
@@ -47,7 +47,7 @@ class GameOfLife:
             run_count_str = ""
         return (cells, int(run_count_str) if len(run_count_str) != 0 else 1)
 
-    def __load_conf__(self, filename) -> None:
+    def __load_conf__(self, filename):
             with open(filename, 'r') as f:
                 self.init_world = set()
                 raw_pattern = ""
@@ -80,36 +80,36 @@ class GameOfLife:
                 self.current_world = self.init_world
 
     @property
-    def currentWorld(self) -> set:
+    def currentWorld(self):
         return self.current_world
     
-    def getSeed(self) -> int:
+    def getSeed(self):
         return self.seed
     
-    def hashify(self) -> str:
+    def hashify(self):
         return utils._hashify_(self.current_world)
     
-    def computeArea(self) -> float:
+    def computeArea(self):
         w, h = utils.computeWH(self.current_world)
         return w*h
 
 #    def resetTo(self, world) -> None:
 #        self.current_world = world
 
-    def reset(self) -> None:
+    def reset(self):
         self.current_world = self.init_world
 
-    def countLife(self) -> int:
+    def countLife(self):
         return len(self.current_world)
 
-    def run(self, steps=1) -> None:
+    def run(self, steps=1):
         self.current_world, randstate = utils.__run__(self.current_world, self.prob, steps, random.getstate())
         random.setstate(randstate)
 
-    def computeClusters(self) -> list:
+    def computeClusters(self):
         return utils.computeClusters(self.current_world)
 
-    def draw(self, side_length=30) -> None:
+    def draw(self, side_length=30):
         Xs, Ys = zip(*self.current_world)
         minx, maxx, miny, maxy = min(Xs), max(Xs), min(Ys), max(Ys)
         height = maxy - miny + 1 + 2 
