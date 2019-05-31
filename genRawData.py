@@ -100,8 +100,8 @@ if __name__ == "__main__":
             initWorld = one.current_world
             GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = seeds[i]) for i in range(number_of_runs)] 
             chunkSize = 2+int(len(GoLs)/2)
-            with Pool(processes=2, maxtasksperchild=chunkSize) as p:
-                for i in range(number_of_steps):
+            for i in range(number_of_steps):
+                with Pool(processes=2, maxtasksperchild=chunkSize) as p:
                     tmpDict = dict()
                     nGoLs = []
                     for GoL, info in p.imap(runStep, GoLs, chunkSize):
