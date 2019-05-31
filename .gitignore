@@ -114,3 +114,4 @@ JS/package-lock.json
 
 #compiled
 *.o
+*.so
