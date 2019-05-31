@@ -1,4 +1,5 @@
-import sys, json, math, os, argparse
+import sys, math, os, argparse
+import ujson as json
 import numpy as np
 from scipy.stats import normaltest
 from multiprocessing import Pool

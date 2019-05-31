@@ -1,7 +1,8 @@
 from libs.GoLv2 import GameOfLife
 import os, sys, math
 import argparse
-import json
+import ujson as json
+import copy
 from multiprocessing import Pool
 import numpy as np
 from scipy.stats import normaltest
@@ -93,16 +94,16 @@ if __name__ == "__main__":
                 'numberOfsteps': number_of_steps,
                 'numberOfruns': number_of_runs,
                 'seeds': seeds,
-                'runs': []
+                'runs': [None for _ in range(number_of_steps)]
             }
             one = GameOfLife(initial_conf_file = fil)
             initWorld = one.current_world
             GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = seeds[i]) for i in range(number_of_runs)] 
-            chunkSize = 4+int(number_of_runs/4)
-            for i in range(number_of_steps):
-                tmpDict = dict()
-                nGoLs = []
-                with Pool(processes=2, maxtasksperchild=2*chunkSize) as p:
+            chunkSize = 2+int(len(GoLs)/2)
+            with Pool(processes=2, maxtasksperchild=chunkSize) as p:
+                for i in range(number_of_steps):
+                    tmpDict = dict()
+                    nGoLs = []
                     for GoL, info in p.imap(runStep, GoLs, chunkSize):
                         nGoLs.append(GoL)
                         if info['hash'] in tmpDict:
@@ -110,8 +111,8 @@ if __name__ == "__main__":
                             tmpDict[info['hash']]['fatherHash'] += info['fatherHash']
                         else:
                             tmpDict[info['hash']] = info
-                experiment['runs'].append(list(tmpDict.values()))
-                GoLs = nGoLs + random.sample(nGoLs, 200*i)
+                    experiment['runs'][i] = list(tmpDict.values())
+                    GoLs = nGoLs + copy.deepcopy(random.sample(nGoLs, 200*i+1))
             # Write output
             with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:
                 json.dump(experiment, outfile)

@@ -1,5 +1,4 @@
 from libs.GoLv2 import GameOfLife
-import libs.utils as utils
 import os, sys
 import argparse
 import json
@@ -20,7 +19,8 @@ if __name__ == "__main__":
             exit(-1)
     ### END SCRIPT PARAMETERS ###
     for f in file_paths:
-        gol = GameOfLife(f, seed=44589432)
+        gol = GameOfLife(44589432, f)
+        gol.run()
         im = gol.draw(30)
         im.save(f[:-4] + ".png", "PNG")
 
