@@ -1,5 +1,4 @@
 from libs.GoLv2 import GameOfLife
-import libs.utils as utils
 import os, sys, math
 import argparse
 import json
