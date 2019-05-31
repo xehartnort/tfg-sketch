@@ -1,5 +1,5 @@
 #CUSTOM IMPORTS
-import libs.utils as utils
+import utils
 import time as t
 import random
 
