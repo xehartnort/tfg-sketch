@@ -73,7 +73,7 @@ def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
             alive = False
     return alive
 
-def __run__ (current_world, prob, unsigned int steps, randstate) -> set:
+def __run__ (current_world, prob, unsigned int steps, randstate) -> tuple:
     random.setstate(randstate)
     # main loop
     for s in range (steps):
@@ -83,4 +83,4 @@ def __run__ (current_world, prob, unsigned int steps, randstate) -> set:
             if transition (random.random(), prob, cell in current_world, counts[cell]):
                 new_world.add (cell)
         current_world = new_world
-    return (current_world, random.getstate())
+    return current_world, random.getstate()
