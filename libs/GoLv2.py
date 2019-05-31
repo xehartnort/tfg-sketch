@@ -1,5 +1,5 @@
 #CUSTOM IMPORTS
-import utils
+import libs.utils as utils
 import time as t
 import random
 
@@ -103,7 +103,7 @@ class GameOfLife:
         return len(self.current_world)
 
     def run(self, steps=1):
-        self.current_world, randstate = utils.__run__(self.current_world, self.prob, steps, random.getstate())
+        (self.current_world, randstate) = utils.__run__(self.current_world, self.prob, steps, random.getstate())
         random.setstate(randstate)
 
     def computeClusters(self):
