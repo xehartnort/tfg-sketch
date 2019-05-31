@@ -1,8 +1,17 @@
 import sys, json, math, os, argparse
 import numpy as np
-from scipy.stats import shapiro
 from scipy.stats import normaltest
 from multiprocessing import Pool
+
+def computeStats(values):
+    length = len(values)
+    mean = sum(values) / length
+    squared_mean = sum([i**2 for i in values]) / length
+    values_std = math.sqrt((squared_mean - mean**2)/number_of_runs)
+    accumulated = [sum(values[:i])/i for i in range(1, length+1)]
+    i = length-20
+    w, p_value = normaltest(accumulated[i:])
+    return (mean, values_std, p_value)
 
 ### BEGIN SIMULATION PARAMETERS ###
 description = "If you think about a processing pipeline, this part does the math"
@@ -20,59 +29,39 @@ for fil in inList:
     if not os.path.isfile(fil):
         print("Error: File supplied is not a file or it does not exist")
         exit(-1)
-    filename = fil.split('/')[-1]
-    ncell_estimator = dict()
-    ncluster_estimator = dict()
-    pos_estimator = dict()
-    ncell_cluster_estimator = dict()
-    clusters_estimator = dict()
     with open(fil, 'r') as fileIn:
         data = json.load(fileIn)
+        outDir2 = outDir + data['pattern'] +"/" 
+        os.makedirs(outDir2)
         runs_data = data['runs']
-        number_of_runs = data['NumberOfruns']
+        number_of_runs = data['numberOfruns']
+        number_of_steps = data['numberOfsteps']
+        alpha = data['alpha']
         # csv like style
         # each element contains (run_number, mean, 3*std)
-        nclusters_estimator = [] 
-        heat_estimator = []
-        ncells_estimator = []
-        def computeStats(values):
-            length = len(values)
-            mean = sum(values) / length
-            squared_mean = sum([i**2 for i in values]) / length
-            values_std = math.sqrt((squared_mean - mean**2)/number_of_runs)
-            accumulated = [sum(values[:i])/i for i in range(1, length+1)]
-            i = 100
-            w, p_value = normaltest(accumulated[i:])
-            try:
-                while p_value < 0.05:
-                    w, p_value = normaltest(accumulated[i:])
-                    i += 10
-                    if length-i <20:
-                        p_value = 0
-                        break
-                    
-            except:
-                p_value = 0
-            return (i, p_value, mean, values_std)
-
+        nclusters = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Clusters', alpha, number_of_runs, number_of_steps), 'w+')
+        ncells = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Células', alpha, number_of_runs, number_of_steps), 'w+')
+        heat = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Calor', alpha, number_of_runs, number_of_steps), 'w+')
+        area = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Área', alpha, number_of_runs, number_of_steps), 'w+')
+        with Pool() as p:
+            for index, run in enumerate(runs_data):
+                heat_values = []
+                nclusters_values = []
+                ncells_values = []
+                area_values = []
+                for i in run:
+                    for j in range(i['ocurrences']):
+                        area_values.append(i['area'])
+                        heat_values.append(i['heat'])
+                        nclusters_values.append(i['nclusters'])
+                        ncells_values.append(i['ncells'])
+                r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values])
+                nclusters.write("{}\t{}\t{}\t{}\n".format(index, r[2][0], 3*r[2][1], r[2][2]))
+                ncells.write("{}\t{}\t{}\t{}\n".format(index, r[1][0], 3*r[1][1], r[1][2]))
+                heat.write("{}\t{}\t{}\t{}\n".format(index, r[0][0], 3*r[0][1], r[0][2]))
+                area.write("{}\t{}\t{}\t{}\n".format(index, r[3][0], 3*r[3][1], r[3][2]))
+        nclusters.close()
+        ncells.close()
+        heat.close()
+        area.close()
     
-        with open("{}_{}_nclusters.data".format(data['pattern'], data['runProb']), 'w+') as nclusters:
-            with open("{}_{}_ncells.data".format(data['pattern'], data['runProb']), 'w+') as ncells:
-                with open("{}_{}_heat.data".format(data['pattern'], data['runProb']), 'w+') as heat:
-                    #nclusters.write("{}\t{}\t{}\n".format("run_number", "mean", "3std", "p-value"))
-                    #ncells.write("{}\t{}\t{}\n".format("run_number", "mean", "3std", "p-value"))
-                    #heat.write("{}\t{}\t{}\n".format("run_number", "mean", "3std", "p-value"))
-                    with Pool(processes=3) as p:
-                        for index, run in enumerate(runs_data):
-                            heat_values = []
-                            nclusters_values = []
-                            ncells_values = []
-                            for i in run:
-                                for j in range(i['ocurrences']):
-                                    heat_values.append(i['heat'])
-                                    nclusters_values.append(i['nclusters'])
-                                    ncells_values.append(i['ncells'])
-                            r = p.map(computeStats, [heat_values, nclusters_values, ncells_values])#, ncells_values, nclusters])
-                            nclusters.write("{}\t{}\t{}\t{}\t{}\n".format(index, r[2][2], 3*r[2][3], r[2][1], r[2][0]))
-                            ncells.write("{}\t{}\t{}\t{}\t{}\n".format(index, r[1][2], 3*r[1][3], r[1][1], r[1][0]))
-                            heat.write("{}\t{}\t{}\t{}\t{}\n".format(index, r[0][2], 3*r[0][3], r[0][1], r[0][0]))

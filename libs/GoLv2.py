@@ -88,7 +88,11 @@ class GameOfLife:
     
     def hashify(self) -> str:
         return utils._hashify_(self.current_world)
-        
+    
+    def computeArea(self) -> float:
+        w, h = utils.computeWH(self.current_world)
+        return w*h
+
 #    def resetTo(self, world) -> None:
 #        self.current_world = world
 

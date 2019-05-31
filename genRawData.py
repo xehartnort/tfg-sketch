@@ -1,76 +1,119 @@
 from libs.GoLv2 import GameOfLife
 import libs.utils as utils
-import os, sys
+import os, sys, math
 import argparse
 import json
-import hashlib
 from multiprocessing import Pool
+import numpy as np
+from scipy.stats import normaltest
+import random
+import matplotlib.pyplot as plt
 
 def genSeed():
     random_data = os.urandom(8)
     return int.from_bytes(random_data, byteorder="big")
 
+def runStep (GoL):
+    initWorld = GoL.currentWorld.copy()
+    origHash = GoL.hashify()
+    GoL.run()
+    count = GoL.countLife()
+    if count == 0:
+        area = 0
+    else:
+        area = GoL.computeArea()
+    return (GoL, 
+        {'fatherHash': [origHash],
+            'hash': GoL.hashify(),
+            'ncells': count,
+            'nclusters': len (GoL.computeClusters()),
+            'heat': len (initWorld^GoL.currentWorld),
+            'area': area,
+            'ocurrences': 1
+        })
+
+def computeStats(values):
+    length = len(values)
+    mean = sum(values) / length
+    squared_mean = sum([i**2 for i in values]) / length
+    values_std = math.sqrt((squared_mean - mean**2)/number_of_runs)
+    accumulated = [sum(values[:i])/i for i in range(1, length+1)]
+    i = length-20
+    w, p_value = normaltest(accumulated[i:])
+    return (mean, values_std, p_value)
+
 if __name__ == "__main__":
-    ### BEGIN SIMULATION PARAMETERS ###
     description = "If you think about a processing pipeline, this part generates raw data, easy to cook, easy to plot"
     parser = argparse.ArgumentParser(description)
-    parser.add_argument("-n", default="default", type=str, dest="sim_name", help='Simulation name')
-    parser.add_argument("-p", default=0.1, type=float, dest="run_prob", help='Probability of applying current rules in each run')
     parser.add_argument("-nr", default=1000, type=int, dest="number_of_runs", help='Number of runs')
     parser.add_argument("-rs", default=100, type=int, dest="run_steps", help="Run steps")
-    parser.add_argument("-i", default='a', type=str, dest="inputFile", help="File which contains the first state of every run", required=True)
-    parser.add_argument("-o", default='default.json', type=str, dest="outputFile", help="Output file, the format is JSON, so it is expected to end with .json" )
+    parser.add_argument('-d', '--output-dir', type=str, dest="outDir", help="dir where I will export the data", required=True)
+    parser.add_argument('-ss', '--seed-list', dest="seed_list", nargs='*', help="Files which contains raw data to be processed")
+    parser.add_argument('-i', '--input-list', dest="inList", nargs='+', help="Files which contains raw data to be processed", required=True)
+    parser.add_argument("-a", '--alpha-list', dest="alpha_list", nargs='+', help='List of probabilities of applying current rules in each run', required=True)
     args = parser.parse_args(sys.argv[1:])
-    file_path = args.inputFile
-    if not os.path.isfile(file_path):
-        print("Error: File supplied is not a file or it does not exist")
-        exit(-1)
-    simName = args.sim_name
-    runSteps = args.run_steps
+    outDir = args.outDir
+    inList = args.inList
+    ### BEGIN SIMULATION PARAMETERS ###
+    number_of_steps = args.run_steps
     number_of_runs = args.number_of_runs
-    run_prob = args.run_prob
+    if args.seed_list != None:
+        seed_list = [int(i) for i in args.seed_list]
+    else: 
+        seed_list = []
+    alpha_list = [float(i) for i in args.alpha_list]
     ### END SIMULATION PARAMETERS ###
-    def runStep (GoL):
-        initWorld = GoL.currentWorld.copy()
-        origHash = GoL.hashify()
-        GoL.run()
-        return (GoL, {'fatherHash': [origHash],
-                'hash': GoL.hashify(),
-                'ncells': GoL.countLife(),
-                'nclusters': len (GoL.computeClusters()),
-                'heat': len (initWorld^GoL.currentWorld),
-                'ocurrences': 1
-            })
-
-    seeds = [genSeed() for i in range(number_of_runs)]
-    experiment = {
-        'pattern': simName, 
-        'runProb': run_prob,
-        'runSteps': runSteps,
-        'NumberOfruns': number_of_runs,
-        'seeds': seeds,
-        'runs': []
-    }
-    one = GameOfLife(initial_conf_file = file_path)
-    initWorld = one.current_world
-    GoLs = [GameOfLife(world = initWorld.copy(), prob = run_prob, seed = seeds[i]) for i in range(number_of_runs)] 
-    chunkSize = 1+int(len(GoLs)/4)
-    with Pool(processes=4) as p:
-        for i in range(runSteps):
-            tmpDict = dict()
-            nGoLs = []
-            for GoL, info in p.imap(runStep, GoLs, chunkSize):
-                nGoLs.append(GoL)
-                if info['hash'] in tmpDict:
-                    tmpDict[info['hash']]['ocurrences'] += 1
-                    tmpDict[info['hash']]['fatherHash'] += info['fatherHash']
-                else:
-                    tmpDict[info['hash']] = info
-            experiment['runs'].append(list(tmpDict.values()))
-            GoLs = nGoLs
-
-    # Write output
-    with open(args.outputFile, 'w+') as outfile:
-        json.dump(experiment, outfile, indent=2)
-
-
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+    if outDir[-1] != '/':
+        outDir += '/'
+    for fil in inList:
+        if not os.path.isfile(fil):
+            print("Error: File: {} is not a file or it does not exist".format(fil))
+            exit(-1)
+    for i in alpha_list:
+        if i > 1 or i <= 0:
+            print("Error: alpha values must be in the interval (0,1]") 
+            exit(-1)
+    if len(seed_list) != number_of_runs and len(seed_list)>0:
+        print("Error: the number of seeds, {}, must be equal to the number of runs, {}".format(len(seed_list), number_of_runs))
+        exit(-1)
+    for fil in inList:
+        for alpha in alpha_list:
+            filename = fil.split('/')[-1][:-4]
+            if len(seed_list) > 0:
+                seeds = seed_list
+            else:
+                seeds = [genSeed() for i in range(number_of_runs)]
+            samplerSeed = genSeed()
+            random.seed(samplerSeed)
+            experiment = {
+                'samplerSeed': samplerSeed,
+                'pattern': filename, 
+                'alpha': alpha,
+                'numberOfsteps': number_of_steps,
+                'numberOfruns': number_of_runs,
+                'seeds': seeds,
+                'runs': []
+            }
+            one = GameOfLife(initial_conf_file = fil)
+            initWorld = one.current_world
+            GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = seeds[i]) for i in range(number_of_runs)] 
+            chunkSize = 4+int(number_of_runs/4)
+            for i in range(number_of_steps):
+                tmpDict = dict()
+                nGoLs = []
+                with Pool(processes=2, maxtasksperchild=2*chunkSize) as p:
+                    for GoL, info in p.imap(runStep, GoLs, chunkSize):
+                        nGoLs.append(GoL)
+                        if info['hash'] in tmpDict:
+                            tmpDict[info['hash']]['ocurrences'] += 1
+                            tmpDict[info['hash']]['fatherHash'] += info['fatherHash']
+                        else:
+                            tmpDict[info['hash']] = info
+                experiment['runs'].append(list(tmpDict.values()))
+                GoLs = nGoLs + random.sample(nGoLs, 200*i)
+            # Write output
+            with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:
+                json.dump(experiment, outfile)
+        

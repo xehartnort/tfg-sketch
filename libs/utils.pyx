@@ -51,6 +51,12 @@ def computeBoundingBox (world) -> tuple:
     Xs, Ys = zip(*world)
     return (min(Xs), max(Xs), min(Ys), max(Ys))
 
+def computeWH(world) -> float:
+    minX, maxX, minY, maxY = computeBoundingBox(world)
+    w = maxX - minX + 1
+    h = maxY - minY + 1
+    return (w,h)
+
 def computeClusterCenter (cluster) -> tuple:
     Xs, Ys = zip(*cluster)
     return (round (sum (Xs)/len (cluster)), round (sum (Ys)/len (cluster)))
