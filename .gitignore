@@ -110,7 +110,7 @@ JS/node_modules/
 JS/package-lock.json
 
 #temp c files
-.c
+*.c
 
 #compiled
-.o
+*.o
