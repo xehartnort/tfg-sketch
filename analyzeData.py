@@ -32,8 +32,9 @@ for fil in inList:
         exit(-1)
     with open(fil, 'r') as fileIn:
         data = json.load(fileIn)
-        outDir2 = outDir + data['pattern'] +"/" 
-        os.makedirs(outDir2)
+        outDir2 = outDir + data['pattern'] +"/"
+        if not os.path.exists(outDir2):
+            os.makedirs(outDir2)
         runs_data = data['runs']
         number_of_runs = data['numberOfruns']
         number_of_steps = data['numberOfsteps']
@@ -51,11 +52,10 @@ for fil in inList:
                 ncells_values = []
                 area_values = []
                 for i in run:
-                    for j in range(i['ocurrences']):
-                        area_values.append(i['area'])
-                        heat_values.append(i['heat'])
-                        nclusters_values.append(i['nclusters'])
-                        ncells_values.append(i['ncells'])
+                    area_values += [i['area'] for j in range(i['ocurrences'])]
+                    heat_values += [i['heat'] for j in range(i['ocurrences'])]
+                    nclusters_values += [i['nclusters'] for j in range(i['ocurrences'])]
+                    ncells_values += [i['ncells'] for j in range(i['ocurrences'])]
                 r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values])
                 nclusters.write("{}\t{}\t{}\t{}\n".format(index, r[2][0], 3*r[2][1], r[2][2]))
                 ncells.write("{}\t{}\t{}\t{}\n".format(index, r[1][0], 3*r[1][1], r[1][2]))
