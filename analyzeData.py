@@ -5,11 +5,11 @@ from scipy.stats import normaltest
 from multiprocessing import Pool
 
 def computeStats(values):
-    length = len(values)
-    mean = sum(values) / length
-    squared_mean = sum([i**2 for i in values]) / length
-    values_std = math.sqrt((squared_mean - mean**2)/number_of_runs)
-    accumulated = [sum(values[:i])/i for i in range(1, length+1)]
+    length = values.shape[0]
+    mean = np.sum(values) / length
+    squared_mean = np.sum(values*values) / length
+    values_std = math.sqrt((squared_mean - mean**2) / length)
+    accumulated = np.array([np.sum(values[:i])/i for i in range(1, length+1)])
     i = length-20
     w, p_value = normaltest(accumulated[i:])
     return (mean, values_std, p_value)
@@ -45,17 +45,12 @@ for fil in inList:
         ncells = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Células', alpha, number_of_runs, number_of_steps), 'w+')
         heat = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Calor', alpha, number_of_runs, number_of_steps), 'w+')
         area = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Área', alpha, number_of_runs, number_of_steps), 'w+')
-        with Pool() as p:
+        with Pool(processes=3) as p:
             for index, run in enumerate(runs_data):
-                heat_values = []
-                nclusters_values = []
-                ncells_values = []
-                area_values = []
-                for i in run:
-                    area_values += [i['area'] for j in range(i['ocurrences'])]
-                    heat_values += [i['heat'] for j in range(i['ocurrences'])]
-                    nclusters_values += [i['nclusters'] for j in range(i['ocurrences'])]
-                    ncells_values += [i['ncells'] for j in range(i['ocurrences'])]
+                area_values = np.array([i['area'] for i in run for j in range(i['ocurrences'])])
+                heat_values = np.array([i['heat'] for i in run for j in range(i['ocurrences'])])
+                nclusters_values = np.array([i['nclusters'] for i in run for j in range(i['ocurrences'])])
+                ncells_values = np.array([i['ncells'] for i in run for j in range(i['ocurrences'])])
                 r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values])
                 nclusters.write("{}\t{}\t{}\t{}\n".format(index, r[2][0], 3*r[2][1], r[2][2]))
                 ncells.write("{}\t{}\t{}\t{}\n".format(index, r[1][0], 3*r[1][1], r[1][2]))

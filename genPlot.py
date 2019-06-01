@@ -43,9 +43,10 @@ for inDir in inDirs:
             #ax2.plot(iteraciones, [0.05]*p_values.size, color=pvalue_bar, ls = '-')
             #ax2.scatter(iteraciones, p_values, marker="o", color=colores)
             #ax2.grid(True, which='major', axis="both", linestyle="--", c="0.6", lw=0.35)
+            plt.title("{} simulaciones, alpha: {}".format(var_arr[3], var_arr[2]))
             plt.xlabel('Iteraciones')
             plt.ylabel('{}'.format(var_arr[1]))
             #finally add legend
             plt.legend((err, good_mean, bad_mean), ("Intervalo de confianza $[\mu-3\sigma,\mu+3\sigma]$", "$\mu$ con $p-value > 0.05$", "$\mu$ con $p-value \leq 0.05$"), #title=u"Polinómios", 
-                    shadow=True, loc=2, fancybox=True)
-            plt.savefig(inDir+filename[:-5]+".png")
+                    shadow=True, loc='best', fancybox=True)
+            plt.savefig(inDir+filename[:-5]+".png", bbox_inches='tight')
