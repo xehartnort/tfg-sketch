@@ -19,8 +19,7 @@ if __name__ == "__main__":
             exit(-1)
     ### END SCRIPT PARAMETERS ###
     for f in file_paths:
-        gol = GameOfLife(44589432, f)
-        gol.run()
+        gol = GameOfLife(initial_conf_file=f)
         im = gol.draw(30)
         im.save(f[:-4] + ".png", "PNG")
 
