@@ -45,7 +45,7 @@ for fil in inList:
         ncells = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Células', alpha, number_of_runs, number_of_steps), 'w+')
         heat = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Calor', alpha, number_of_runs, number_of_steps), 'w+')
         area = open(outDir2+"{}_{}_{}_{}_{}.data".format('iteración', 'Área', alpha, number_of_runs, number_of_steps), 'w+')
-        with Pool(processes=3) as p:
+        with Pool(processes=2) as p:
             for index, run in enumerate(runs_data):
                 area_values = np.array([i['area'] for i in run for j in range(i['ocurrences'])])
                 heat_values = np.array([i['heat'] for i in run for j in range(i['ocurrences'])])

@@ -22,4 +22,11 @@ if __name__ == "__main__":
         gol = GameOfLife(initial_conf_file=f)
         im = gol.draw(30)
         im.save(f[:-4] + ".png", "PNG")
-
+        '''
+        gol.run()
+        im = gol.draw(30)
+        im.save(f[:-4] + "2.png", "PNG")
+        gol.run()
+        im = gol.draw(30)
+        im.save(f[:-4] + "3.png", "PNG")
+        '''
