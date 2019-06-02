@@ -9,9 +9,9 @@ def computeStats(values):
     mean = np.sum(values) / length
     squared_mean = np.sum(values*values) / length
     values_std = math.sqrt((squared_mean - mean**2) / length)
-    accumulated = np.array([np.sum(values[:i])/i for i in range(1, length+1)])
-    i = length-20
-    w, p_value = normaltest(accumulated[i:])
+    n = length-20
+    accumulated = np.array([np.sum(values[:i])/i for i in range(n, length+1)])
+    w, p_value = normaltest(accumulated)
     return (mean, values_std, p_value)
 
 ### BEGIN SIMULATION PARAMETERS ###
