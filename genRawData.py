@@ -75,13 +75,14 @@ if __name__ == "__main__":
                 'numberOfruns': number_of_runs,
                 'runs': [None for _ in range(number_of_steps)]
             }
+            # hay que añadir la iteración inicial
             one = GameOfLife(initial_conf_file = fil)
             initWorld = one.current_world
             GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = random.random()) for i in range(number_of_runs)] 
             chunkSize = 1+int(len(GoLs)/2)
             inc = int(number_of_runs/10)
-            for i in range(number_of_steps):
-                with Pool(processes=2, maxtasksperchild=chunkSize) as p:
+            with Pool(processes=2, maxtasksperchild=chunkSize) as p:
+                for i in range(number_of_steps):
                     tmpDict = dict()
                     nGoLs = []
                     for GoL, info in p.imap(runStep, GoLs, chunkSize):
@@ -91,7 +92,7 @@ if __name__ == "__main__":
                         else:
                             tmpDict[info['hash']] = info
                     experiment['runs'][i] = list(tmpDict.values())
-                    sample = random.sample(nGoLs, inc*i+1)
+                    sample = random.sample(nGoLs, inc*i)
                     GoLs = nGoLs + [GameOfLife(world = g.currentWorld.copy(), prob = alpha, seed = random.random()) for g in sample]
             # Write output
             with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:

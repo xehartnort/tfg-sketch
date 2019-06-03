@@ -1,7 +1,7 @@
 import sys, math, os, argparse
 import ujson as json
 import numpy as np
-from scipy.stats import normaltest
+from scipy.stats import shapiro
 from multiprocessing import Pool
 
 def computeStats(values):
@@ -11,7 +11,7 @@ def computeStats(values):
     values_std = math.sqrt((squared_mean - mean**2) / length)
     n = length-20
     accumulated = np.array([np.sum(values[:i])/i for i in range(n, length+1)])
-    w, p_value = normaltest(accumulated)
+    w, p_value = shapiro(accumulated)
     return (mean, values_std, p_value)
 
 ### BEGIN SIMULATION PARAMETERS ###
@@ -52,10 +52,10 @@ for fil in inList:
                 nclusters_values = np.array([i['nclusters'] for i in run for j in range(i['ocurrences'])])
                 ncells_values = np.array([i['ncells'] for i in run for j in range(i['ocurrences'])])
                 r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values])
-                nclusters.write("{}\t{}\t{}\t{}\n".format(index, r[2][0], 3*r[2][1], r[2][2]))
-                ncells.write("{}\t{}\t{}\t{}\n".format(index, r[1][0], 3*r[1][1], r[1][2]))
-                heat.write("{}\t{}\t{}\t{}\n".format(index, r[0][0], 3*r[0][1], r[0][2]))
-                area.write("{}\t{}\t{}\t{}\n".format(index, r[3][0], 3*r[3][1], r[3][2]))
+                heat.write("{}\t{}\t{}\t{}\n".format(index+1, r[0][0], 3*r[0][1], r[0][2]))
+                nclusters.write("{}\t{}\t{}\t{}\n".format(index+1, r[1][0], 3*r[1][1], r[1][2]))
+                ncells.write("{}\t{}\t{}\t{}\n".format(index+1, r[2][0], 3*r[2][1], r[2][2]))
+                area.write("{}\t{}\t{}\t{}\n".format(index+1, r[3][0], 3*r[3][1], r[3][2]))
         nclusters.close()
         ncells.close()
         heat.close()
