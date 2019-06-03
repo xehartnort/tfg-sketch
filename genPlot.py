@@ -32,12 +32,12 @@ for inDir in inDirs:
             bad_pos = np.where(p_values < 0.05)
             bad_blue = (0, 0.5, 1) # blue
             good_pos = np.where(p_values >= 0.05)
-            good_orange = (1,0.4,0) # orange
+            good_orange = (1, 0.4, 0) # orange
             err_c = (0.6, 0, 0.8) # purple
-            pvalue_bar = (1,0.4,0) # orange
+            pvalue_bar = (1, 0.4, 0) # orange
             err, = ax1.plot(iteraciones, means+tri_std, color=err_c, ls='--')
-            good_mean = ax1.scatter(good_pos, means[good_pos], color=good_orange)
-            bad_mean = ax1.scatter(bad_pos, means[bad_pos], color=bad_blue)
+            good_mean = ax1.scatter([i+1 for i in good_pos], means[good_pos], color=good_orange)
+            bad_mean = ax1.scatter([i+1 for i  in bad_pos], means[bad_pos], color=bad_blue)
             ax1.plot(iteraciones, means-tri_std, color=err_c, ls='--')
             ax1.grid(True, which='major', axis="both", linestyle="--", c="0.6", lw=0.35)
             #ax2.plot(iteraciones, [0.05]*p_values.size, color=pvalue_bar, ls = '-')
