@@ -12,20 +12,22 @@ def genSeed():
     random_data = os.urandom(8)
     return int.from_bytes(random_data, byteorder="big")
 
+# idea y si recibe un entero?????????
+
 def runStep (GoL):
     initWorld = GoL.currentWorld.copy()
-    GoL.run()
-    count = GoL.countLife()
-    if count == 0:
-        area = 0
-    else:
-        area = GoL.computeArea()
+    newGoL = GameOfLife(world = initWorld, randState=GoL.getRandState(), prob=GoL.getAlpha())
+    newGoL.run()
+    count = newGoL.countLife()
+    area = 0
+    if count != 0:
+        area = newGoL.computeArea()
     return (GoL, 
         {
-            'hash': GoL.hashify(),
+            'hash': newGoL.hashify(),
             'ncells': count,
-            'nclusters': len (GoL.computeClusters()),
-            'heat': len (initWorld^GoL.currentWorld),
+            'nclusters': len (newGoL.computeClusters()),
+            'heat': len (initWorld^newGoL.currentWorld),
             'area': area,
             'ocurrences': 1
         })

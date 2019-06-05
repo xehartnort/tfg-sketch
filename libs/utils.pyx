@@ -10,7 +10,7 @@ neighboring_cells = [
 ]
 
 def _hashify_(world) -> str:
-    return hashlib.sha1 (bytes (str (world), 'utf-8')).hexdigest()
+    return hashlib.blake2s (bytes (str (world), 'utf-8')).hexdigest()
 
 def offset (delta) -> set:
     "Slide/offset all the cells by delta, a (dx, dy) vector."

@@ -7,15 +7,21 @@ from PIL import Image, ImageDraw, ImageOps
 
 class GameOfLife:
 
-    def __init__(self, seed=1, initial_conf_file=None, world={}, prob = 1):
-        self.seed = seed
-        random.seed(seed)
+    def __init__(self, seed=None, randState=None, initial_conf_file=None, world=None, prob = 1):
+        #inherit random status or start a new one
+        if randState:
+            random.setstate(randState)
+        elif seed:
+            self.seed = seed
+            random.seed(seed)
         self.prob = prob
+        # read from a file or inherit world
         if initial_conf_file:
             self.__load_conf__(initial_conf_file)
-        else:
+        elif world:
             self.init_world = world
             self.current_world = world
+        assert self.init_world != None
 
     def _parse_row_(self, row_pos, input_row):
         run_count_str = ""
@@ -86,6 +92,12 @@ class GameOfLife:
     def getSeed(self):
         return self.seed
     
+    def getAlpha(self):
+        return self.prob
+
+    def getRandState(self):
+        return random.getstate()
+
     def hashify(self):
         return utils._hashify_(self.current_world)
     
