@@ -2,12 +2,18 @@ from collections import Counter
 from re import sub
 import random
 import hashlib
+import numpy as np
 
 neighboring_cells = [
     (-1, 1), (0, 1), (1, 1), 
     (-1, 0),         (1, 0), 
     (-1,-1), (0,-1), (1,-1)
 ]
+
+transition_table = np.array([
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 1, 1, 0, 0, 0, 0, 0]
+], dtype=np.bool)
 
 def _hashify_(world) -> str:
     return hashlib.blake2s (bytes (str (world), 'utf-8')).hexdigest()
@@ -67,10 +73,7 @@ def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
         int num_neigh: number of neighbors
     '''
     if rand < prob:
-        if (alive and num_neigh == 2) or num_neigh == 3:
-            alive = True
-        else:
-            alive = False
+        alive = transition_table[int(alive)][num_neigh]
     return alive
 
 def __run__ (current_world, prob, unsigned int steps, randstate) -> tuple:
