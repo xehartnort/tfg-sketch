@@ -41,10 +41,10 @@ for fil in inList:
         alpha = data['alpha']
         # csv like style
         # each element contains (run_number, mean, 3*std)
-        nclusters = open(outDir2+"{:.2f}_{}_{}_{}_{}.data".format('iteracion', 'Clusteres', alpha, number_of_runs, number_of_steps), 'w+')
-        ncells = open(outDir2+"{:.2f}_{}_{}_{}_{}.data".format('iteracion', 'Celulas', alpha, number_of_runs, number_of_steps), 'w+')
-        heat = open(outDir2+"{:.2f}_{}_{}_{}_{}.data".format('iteracion', 'Calor', alpha, number_of_runs, number_of_steps), 'w+')
-        area = open(outDir2+"{:.2f}_{}_{}_{}_{}.data".format('iteracion', 'Area', alpha, number_of_runs, number_of_steps), 'w+')
+        nclusters = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Clusteres', alpha, number_of_runs, number_of_steps), 'w+')
+        ncells = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Celulas', alpha, number_of_runs, number_of_steps), 'w+')
+        heat = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Calor', alpha, number_of_runs, number_of_steps), 'w+')
+        area = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Area', alpha, number_of_runs, number_of_steps), 'w+')
         with Pool(processes=2) as p:
             for index, run in enumerate(runs_data):
                 area_values = np.array([i['area'] for i in run for j in range(i['ocurrences'])])
