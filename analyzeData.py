@@ -9,12 +9,13 @@ def computeStats(values):
     mean = np.sum(values) / length
     squared_mean = np.sum(values*values) / length
     values_std = math.sqrt((squared_mean - mean**2) / length)
-    n = length-20
+    
     min_l = int(length*3/4)
     accumulated = np.array([np.sum(values[:i])/i for i in range(min_l, length+1)])
+    n = 20
     w, p_value = shapiro(accumulated[n:])
-    while p_value < 0.05 and (n-20) > min_l:
-        n -= 20
+    while p_value < 0.05 and (n+20) < min_l:
+        n += 20
         w, p_value = shapiro(accumulated[n:])
     return (mean, values_std, p_value)
 
