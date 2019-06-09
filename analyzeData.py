@@ -57,7 +57,7 @@ for fil in inList:
                 nclusters_values = np.array([i['nclusters'] for i in run for j in range(i['ocurrences'])])
                 ncells_values = np.array([i['ncells'] for i in run for j in range(i['ocurrences'])])
                 density_values = np.zeros(shape=ncells_values.shape)
-                for i in range(ncells.shape[0]):
+                for i in range(ncells_values.shape[0]):
                     if area_values[i] != 0:
                         density_values[i] = ncells_values[i] /  area_values[i]
                 r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values, density_values])
