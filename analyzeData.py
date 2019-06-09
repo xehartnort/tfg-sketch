@@ -1,7 +1,7 @@
 import sys, math, os, argparse
 import ujson as json
 import numpy as np
-from scipy.stats import normaltest
+from scipy.stats import normaltest, shapiro
 from multiprocessing import Pool
 
 def computeStats(values):
@@ -9,13 +9,15 @@ def computeStats(values):
     mean = np.sum(values) / length
     squared_mean = np.sum(values*values) / length
     values_std = math.sqrt((squared_mean - mean**2) / length)
-    min_l = int(length*3/4)
-    accumulated = np.array([np.sum(values[:i])/i for i in range(min_l, length+1)])
-    n = 20
-    w, p_value = normaltest(accumulated[n:])
-    while p_value < 0.05 and (n+20) > len(accumulated):
-        n += 20
-        w, p_value = normaltest(accumulated[n:])
+    accumulated = np.array([np.sum(values[:i])/i for i in range(length-100, length+1)])
+    accumulated_length = len(accumulated)
+    i = 0
+    #print(len(accumulated[i:]))
+    w, p_value = shapiro(accumulated[i:])
+    while p_value < 0.05 and (accumulated_length-i) > 20:
+        i += 10
+        #print(len(accumulated[i:]))
+        w, p_value = shapiro(accumulated[i:])
     return (mean, values_std, p_value)
 
 ### BEGIN SIMULATION PARAMETERS ###

@@ -12,8 +12,6 @@ def genSeed():
     random_data = os.urandom(8)
     return int.from_bytes(random_data, byteorder="big")
 
-# idea y si recibe un entero?????????
-
 def runStep (GoL):
     initWorld = GoL.currentWorld.copy()
     newGoL = GameOfLife(world = initWorld, randState=GoL.getRandState(), prob=GoL.getAlpha())
@@ -83,7 +81,7 @@ if __name__ == "__main__":
             GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = random.random()) for i in range(number_of_runs)] 
             chunkSize = 1+int(len(GoLs)/2)
             inc = int(number_of_runs/10)
-            with Pool(processes=2, maxtasksperchild=chunkSize) as p:
+            with Pool(maxtasksperchild=chunkSize) as p:
                 for i in range(number_of_steps):
                     tmpDict = dict()
                     nGoLs = []
@@ -94,8 +92,8 @@ if __name__ == "__main__":
                         else:
                             tmpDict[info['hash']] = info
                     experiment['runs'][i] = list(tmpDict.values())
-                    sample = random.sample(nGoLs, inc*i)
-                    GoLs = nGoLs + [GameOfLife(world = g.currentWorld.copy(), prob = alpha, seed = random.random()) for g in sample]
+                    #sample = random.sample(nGoLs, inc*i)
+                    GoLs = nGoLs #+ [GameOfLife(world = g.currentWorld.copy(), prob = alpha, seed = random.random()) for g in sample]
             # Write output
             with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:
                 json.dump(experiment, outfile)

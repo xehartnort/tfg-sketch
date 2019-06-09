@@ -15,12 +15,20 @@ args = parser.parse_args(sys.argv[1:])
 inDirs = args.inDirs
 alpha_color = dict()
 color_Arr = plt.rcParams['axes.prop_cycle'].by_key()['color']
-alpha_color['0.15'] = color_Arr[0]
-alpha_color['0.30'] = color_Arr[1]
-alpha_color['0.45'] = color_Arr[2]
-alpha_color['0.60'] = color_Arr[3]
-alpha_color['0.75'] = color_Arr[4]
-alpha_color['0.90'] = color_Arr[5]
+i = 0.10
+j = 0
+l = len(color_Arr)
+while i < 1:
+    alpha_color['{:.2f}'.format(i)] = color_Arr[j%l]
+    i += 0.05
+    j += 1
+    '''
+    alpha_color['0.30'] = color_Arr[1]
+    alpha_color['0.45'] = color_Arr[2]
+    alpha_color['0.60'] = color_Arr[3]
+    alpha_color['0.75'] = color_Arr[4]
+    alpha_color['0.90'] = color_Arr[5]
+    '''
 for inDir in inDirs:
     if not os.path.exists(inDir):
         os.makedirs(inDir)
