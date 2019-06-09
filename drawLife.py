@@ -19,16 +19,16 @@ if __name__ == "__main__":
             exit(-1)
     ### END SCRIPT PARAMETERS ###
     for f in file_paths:
-        gol = GameOfLife(initial_conf_file=f, prob= 0.3)
-        #im = gol.draw(30)
-        #im.save(f[:-4] + ".png", "PNG")
+        gol = GameOfLife(initial_conf_file=f, prob= 1)
+        im = gol.draw(30)
+        im.save(f[:-4] + ".png", "PNG")
         print(len(gol.computeClusters()))
         gol.run()
-        #im = gol.draw(30)
-        #im.save(f[:-4] + "2.png", "PNG")
+        im = gol.draw(30)
+        im.save(f[:-4] + "2.png", "PNG")
         print(len(gol.computeClusters()))
         gol.run()
-        #im = gol.draw(30)
-        #im.save(f[:-4] + "3.png", "PNG")
+        im = gol.draw(30)
+        im.save(f[:-4] + "3.png", "PNG")
         print(len(gol.computeClusters()))
         

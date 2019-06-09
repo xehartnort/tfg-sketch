@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os, argparse, sys
 
-
 plt.rcParams['mathtext.fontset'] = 'custom'
 plt.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 plt.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
@@ -14,35 +13,44 @@ parser = argparse.ArgumentParser(description)
 parser.add_argument('-i', '--input-dir', dest="inDirs", nargs='+', help="Files which contains raw data to be processed", required=True)
 args = parser.parse_args(sys.argv[1:])
 inDirs = args.inDirs
-
+alpha_color = dict()
+color_Arr = plt.rcParams['axes.prop_cycle'].by_key()['color']
+alpha_color['0.15'] = color_Arr[0]
+alpha_color['0.30'] = color_Arr[1]
+alpha_color['0.45'] = color_Arr[2]
+alpha_color['0.60'] = color_Arr[3]
+alpha_color['0.75'] = color_Arr[4]
+alpha_color['0.90'] = color_Arr[5]
 for inDir in inDirs:
     if not os.path.exists(inDir):
         os.makedirs(inDir)
     if inDir[-1] != '/':
         inDir += '/'
+    plots_dict = dict()
     for filename in os.listdir(inDir):
         if filename.endswith(".data"):
             name = filename
             var_arr = name[:-5].split("_")
+            alpha = var_arr[2]
             mc = np.genfromtxt(inDir+filename, delimiter="\t", dtype=None, encoding="utf-8")
             names = mc.dtype.names
             iteraciones = mc[names[0]]
             means = mc[names[1]]
             tri_std = mc[names[2]]
-            p_values = mc[names[3]]
-            fig = plt.figure(figsize = (10, 12))
-            ax1 = fig.add_subplot(211)
-            bad_pos = np.where(p_values < 0.05)
-            good_pos = np.where(p_values >= 0.05)
-            ax1.errorbar(iteraciones[good_pos], means[good_pos], yerr=tri_std[good_pos], label=r'$\mu\in[\mu-3\sigma,\mu+3\sigma]$ con $p-value > 0.05$', fmt='o', capsize=3)
-            ax1.errorbar(iteraciones[bad_pos], means[bad_pos], yerr=tri_std[bad_pos], label=r'$\mu\in[\mu-3\sigma,\mu+3\sigma]$ con $p-value \leq 0.05$', fmt='o', capsize=3)
-            ax1.grid(True, which='major', axis="both", linestyle="--", c="0.6", lw=0.35)
-            plt.xlabel('Iteraciones')
             if var_arr[1] == "Clusteres":
                 var_arr[1] = "Clústeres"
             elif var_arr[1] == "Celulas":
                 var_arr[1] = "Células"
-            plt.ylabel('{}'.format(var_arr[1]))
-            plt.legend(shadow=True, loc='best', fancybox=True)
-            plt.savefig(inDir+filename[:-5]+".png", bbox_inches='tight')
-            plt.close(fig=fig)
+            if var_arr[1] not in plots_dict:
+                plots_dict[var_arr[1]] = plt.subplots() # part_fig, part_ax
+                plots_dict[var_arr[1]][1].set_xlabel('Iteraciones')
+                plots_dict[var_arr[1]][1].set_ylabel('{}'.format(var_arr[1]))
+            plots_dict[var_arr[1]][1].errorbar(iteraciones, means, yerr=tri_std, label=r'$\alpha={}$'.format(alpha), fmt='.', capsize=3, color=alpha_color[alpha]) 
+    for k in plots_dict:
+        fig, ax = plots_dict[k]
+        handles, labels = ax.get_legend_handles_labels()
+        # sort both labels and handles by labels
+        labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
+        fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1), ncol=3, fancybox=True)
+        fig.savefig(inDir+"{}_multiple_alpha.png".format(k), bbox_inches='tight')
+        plt.close(fig=fig)
