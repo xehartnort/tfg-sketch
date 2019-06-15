@@ -57,7 +57,7 @@ for inDir in inDirs:
         handles, labels = ax.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
-        fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1), ncol=3, fancybox=True)
+        fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.49, 1), ncol = 4, fancybox=True)
         if k == "Clústeres":
             k = "Clusteres"
         elif k == "Vidas inmóviles":
