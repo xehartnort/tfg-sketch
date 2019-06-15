@@ -70,7 +70,7 @@ for fil in inList:
                 ncells.write("{}\t{}\t{}\t{}\n".format(index+1, r[2][0], 3*r[2][1], r[2][2]))
                 area.write("{}\t{}\t{}\t{}\n".format(index+1, r[3][0], 3*r[3][1], r[3][2]))
                 densidad.write("{}\t{}\t{}\t{}\n".format(index+1, r[4][0], 3*r[4][1], r[4][2]))
-                fijas.write("{}\t{}\t{}\t{}\n".format(index+1, r[4][0], 3*r[4][1], r[4][2]))
+                fijas.write("{}\t{}\t{}\t{}\n".format(index+1, r[5][0], 3*r[5][1], r[5][2]))
         nclusters.close()
         ncells.close()
         heat.close()
