@@ -24,13 +24,11 @@ def runStep (GoL):
     clusters = newGoL.computeClusters()
     return (GoL, 
         {
-            'hash': newGoL.hashify(),
             'ncells': count,
             'nstillLifes': sum(map(GameOfLife.isStillLife , clusters)),
             'nclusters': len (clusters),
             'heat': len (initWorld^newGoL.currentWorld),
             'area': area,
-            'ocurrences': 1
         })
 
 if __name__ == "__main__":
@@ -76,7 +74,7 @@ if __name__ == "__main__":
                 'alpha': alpha,
                 'numberOfsteps': number_of_steps,
                 'numberOfruns': number_of_runs,
-                'runs': [None for _ in range(number_of_steps)]
+                'runs': [[] for _ in range(number_of_steps)]
             }
             # hay que añadir la iteración inicial
             one = GameOfLife(initial_conf_file = fil)
@@ -86,19 +84,10 @@ if __name__ == "__main__":
             inc = int(number_of_runs/10)
             with Pool(maxtasksperchild=chunkSize) as p:
                 for i in range(number_of_steps):
-                    tmpDict = dict()
                     nGoLs = []
                     for GoL, info in p.imap(runStep, GoLs, chunkSize):
                         nGoLs.append(GoL)
-                        if info['hash'] in tmpDict:
-                            tmpDict[info['hash']]['ocurrences'] += 1
-                        else:
-                            tmpDict[info['hash']] = info
-                    experiment['runs'][i] = list(tmpDict.values())
-                    #if inc*i < 000:
-                    #    sample = random.sample(nGoLs, inc*i)
-                    #    GoLs = nGoLs + [GameOfLife(world = g.currentWorld.copy(), prob = alpha, seed = random.random()) for g in sample]
-                    #else:
+                        experiment['runs'][i].append(info)
                     GoLs = nGoLs
             # Write output
             with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:

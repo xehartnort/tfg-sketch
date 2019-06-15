@@ -45,6 +45,8 @@ for inDir in inDirs:
                 var_arr[1] = "Clústeres"
             elif var_arr[1] == "Celulas":
                 var_arr[1] = "Nodos ocupados"
+            elif var_arr[1] == "Fijas":
+                var_arr[1] = "Vidas inmóviles"
             if var_arr[1] not in plots_dict:
                 plots_dict[var_arr[1]] = plt.subplots() # part_fig, part_ax
                 plots_dict[var_arr[1]][1].set_xlabel('Iteraciones')
@@ -58,5 +60,7 @@ for inDir in inDirs:
         fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1), ncol=3, fancybox=True)
         if k == "Clústeres":
             k = "Clusteres"
+        elif k == "Vidas inmóviles":
+            k = "Fijas"
         fig.savefig(inDir+"{}_multiple_alpha.png".format(k), bbox_inches='tight')
         plt.close(fig=fig)

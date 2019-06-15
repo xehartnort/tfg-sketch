@@ -55,12 +55,12 @@ for fil in inList:
         fijas = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Fijas', alpha, number_of_runs, number_of_steps), 'w+')
         with Pool() as p:
             for index, run in enumerate(runs_data):
-                area_values = np.array([i['area'] for i in run for j in range(i['ocurrences'])])
-                heat_values = np.array([i['heat'] for i in run for j in range(i['ocurrences'])])
-                nclusters_values = np.array([i['nclusters'] for i in run for j in range(i['ocurrences'])])
-                ncells_values = np.array([i['ncells'] for i in run for j in range(i['ocurrences'])])
+                area_values = np.array([i['area'] for i in run])
+                heat_values = np.array([i['heat'] for i in run])
+                nclusters_values = np.array([i['nclusters'] for i in run])
+                ncells_values = np.array([i['ncells'] for i in run])
                 density_values = np.zeros(shape=ncells_values.shape)
-                fijas_values = np.array([i['nstillLifes'] for i in run for j in range(i['ocurrences'])])
+                fijas_values = np.array([i['nstillLifes'] for i in run])
                 for i in range(ncells_values.shape[0]):
                     if area_values[i] != 0:
                         density_values[i] = ncells_values[i] /  area_values[i]
