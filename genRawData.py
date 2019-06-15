@@ -92,8 +92,11 @@ if __name__ == "__main__":
                         else:
                             tmpDict[info['hash']] = info
                     experiment['runs'][i] = list(tmpDict.values())
-                    sample = random.sample(nGoLs, inc*i)
-                    GoLs = nGoLs + [GameOfLife(world = g.currentWorld.copy(), prob = alpha, seed = random.random()) for g in sample]
+                    #if inc*i < 000:
+                    #    sample = random.sample(nGoLs, inc*i)
+                    #    GoLs = nGoLs + [GameOfLife(world = g.currentWorld.copy(), prob = alpha, seed = random.random()) for g in sample]
+                    #else:
+                    GoLs = nGoLs
             # Write output
             with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:
                 json.dump(experiment, outfile)
