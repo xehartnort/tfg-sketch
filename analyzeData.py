@@ -22,6 +22,8 @@ def computeStats(values):
             if np.ptp(candidate) == 0:
                 break
             w, p_value = shapiro(candidate)
+    else:
+        p_value = 1
     return (mean, values_std, p_value)
 
 ### BEGIN SIMULATION PARAMETERS ###

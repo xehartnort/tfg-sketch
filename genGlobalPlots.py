@@ -62,5 +62,7 @@ for inDir in inDirs:
             k = "Clusteres"
         elif k == "Vidas inmóviles":
             k = "Fijas"
+        elif k == "Nodos ocupados":
+            k = "Celulas"
         fig.savefig(inDir+"{}_multiple_alpha.png".format(k), bbox_inches='tight')
         plt.close(fig=fig)
