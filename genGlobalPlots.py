@@ -15,20 +15,16 @@ args = parser.parse_args(sys.argv[1:])
 inDirs = args.inDirs
 alpha_color = dict()
 color_Arr = plt.rcParams['axes.prop_cycle'].by_key()['color']
-i = 0.10
+i = 0.01
 j = 0
 l = len(color_Arr)
 while i < 1:
     alpha_color['{:.2f}'.format(i)] = color_Arr[j%l]
     i += 0.05
     j += 1
-    '''
-    alpha_color['0.30'] = color_Arr[1]
-    alpha_color['0.45'] = color_Arr[2]
-    alpha_color['0.60'] = color_Arr[3]
-    alpha_color['0.75'] = color_Arr[4]
-    alpha_color['0.90'] = color_Arr[5]
-    '''
+alpha_color['{:.2f}'.format(0.99)] = color_Arr[j%l]
+
+
 for inDir in inDirs:
     if not os.path.exists(inDir):
         os.makedirs(inDir)
@@ -48,7 +44,7 @@ for inDir in inDirs:
             if var_arr[1] == "Clusteres":
                 var_arr[1] = "Clústeres"
             elif var_arr[1] == "Celulas":
-                var_arr[1] = "Células"
+                var_arr[1] = "Nodos ocupados"
             if var_arr[1] not in plots_dict:
                 plots_dict[var_arr[1]] = plt.subplots() # part_fig, part_ax
                 plots_dict[var_arr[1]][1].set_xlabel('Iteraciones')
@@ -60,5 +56,7 @@ for inDir in inDirs:
         # sort both labels and handles by labels
         labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
         fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1), ncol=3, fancybox=True)
+        if k == "Clústeres":
+            k = "Clusteres"
         fig.savefig(inDir+"{}_multiple_alpha.png".format(k), bbox_inches='tight')
         plt.close(fig=fig)

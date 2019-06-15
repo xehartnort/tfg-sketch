@@ -41,8 +41,10 @@ for inDir in inDirs:
             if var_arr[1] == "Clusteres":
                 var_arr[1] = "Clústeres"
             elif var_arr[1] == "Celulas":
-                var_arr[1] = "Células"
+                var_arr[1] = "Nodos ocupados"
             plt.ylabel('{}'.format(var_arr[1]))
             plt.legend(shadow=True, loc='best', fancybox=True)
+            if var_arr[1] == "Clústeres":
+                var_arr[1] = "Clusteres"
             plt.savefig(inDir+filename[:-5]+".png", bbox_inches='tight')
             plt.close(fig=fig)
