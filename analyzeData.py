@@ -52,6 +52,7 @@ for fil in inList:
         heat = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Calor', alpha, number_of_runs, number_of_steps), 'w+')
         area = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Area', alpha, number_of_runs, number_of_steps), 'w+')
         densidad = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Densidad', alpha, number_of_runs, number_of_steps), 'w+')
+        fijas = open(outDir2+"{}_{}_{:.2f}_{}_{}.data".format('iteracion', 'Fijas', alpha, number_of_runs, number_of_steps), 'w+')
         with Pool() as p:
             for index, run in enumerate(runs_data):
                 area_values = np.array([i['area'] for i in run for j in range(i['ocurrences'])])
@@ -59,15 +60,17 @@ for fil in inList:
                 nclusters_values = np.array([i['nclusters'] for i in run for j in range(i['ocurrences'])])
                 ncells_values = np.array([i['ncells'] for i in run for j in range(i['ocurrences'])])
                 density_values = np.zeros(shape=ncells_values.shape)
+                fijas_values = np.array([i['nstillLifes'] for i in run for j in range(i['ocurrences'])])
                 for i in range(ncells_values.shape[0]):
                     if area_values[i] != 0:
                         density_values[i] = ncells_values[i] /  area_values[i]
-                r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values, density_values])
+                r = p.map(computeStats, [heat_values, nclusters_values, ncells_values, area_values, density_values, fijas_values])
                 heat.write("{}\t{}\t{}\t{}\n".format(index+1, r[0][0], 3*r[0][1], r[0][2]))
                 nclusters.write("{}\t{}\t{}\t{}\n".format(index+1, r[1][0], 3*r[1][1], r[1][2]))
                 ncells.write("{}\t{}\t{}\t{}\n".format(index+1, r[2][0], 3*r[2][1], r[2][2]))
                 area.write("{}\t{}\t{}\t{}\n".format(index+1, r[3][0], 3*r[3][1], r[3][2]))
                 densidad.write("{}\t{}\t{}\t{}\n".format(index+1, r[4][0], 3*r[4][1], r[4][2]))
+                fijas.write("{}\t{}\t{}\t{}\n".format(index+1, r[4][0], 3*r[4][1], r[4][2]))
         nclusters.close()
         ncells.close()
         heat.close()

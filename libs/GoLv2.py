@@ -7,6 +7,12 @@ from PIL import Image, ImageDraw, ImageOps
 
 class GameOfLife:
 
+    @staticmethod
+    def isStillLife(world) -> bool:
+        tmp = GameOfLife(world = world.copy(), prob = 1)
+        tmp.run()
+        return int(len((world - tmp.currentWorld)) == 0)
+
     def __init__(self, seed=None, randState=None, initial_conf_file=None, world=None, prob = 1):
         #inherit random status or start a new one
         if randState:
@@ -100,13 +106,11 @@ class GameOfLife:
 
     def hashify(self):
         return utils._hashify_(self.current_world)
+        #return utils.genRleString(self.current_world)
     
     def computeArea(self):
         w, h = utils.computeWH(self.current_world)
         return w*h
-
-#    def resetTo(self, world) -> None:
-#        self.current_world = world
 
     def reset(self):
         self.current_world = self.init_world

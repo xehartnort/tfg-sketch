@@ -2,6 +2,7 @@ from libs.GoLv2 import GameOfLife
 import os, sys, math
 import argparse
 import ujson as json
+from functools import reduce
 from multiprocessing import Pool
 import numpy as np
 from scipy.stats import normaltest
@@ -20,11 +21,13 @@ def runStep (GoL):
     area = 0
     if count != 0:
         area = newGoL.computeArea()
+    clusters = newGoL.computeClusters()
     return (GoL, 
         {
             'hash': newGoL.hashify(),
             'ncells': count,
-            'nclusters': len (newGoL.computeClusters()),
+            'nstillLifes': sum(map(GameOfLife.isStillLife , clusters)),
+            'nclusters': len (clusters),
             'heat': len (initWorld^newGoL.currentWorld),
             'area': area,
             'ocurrences': 1

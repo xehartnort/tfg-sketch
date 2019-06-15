@@ -15,6 +15,7 @@ transition_table = np.array([
     [0, 0, 1, 1, 0, 0, 0, 0, 0]
 ], dtype=np.bool)
 
+
 def _hashify_(world) -> str:
     return hashlib.blake2s (bytes (str (world), 'utf-8')).hexdigest()
 
@@ -76,14 +77,10 @@ def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
         alive = transition_table[int(alive)][num_neigh]
     return alive
 
-def __run__ (current_world, prob, unsigned int steps, randstate) -> tuple:
+def __run__ (current_world, float prob, unsigned int steps, randstate) -> tuple:
     random.setstate(randstate)
     # main loop
     for s in range (steps):
         counts = Counter(n for cell in current_world for n in offset (cell))
-        new_world = set ()
-        for cell in counts:
-            if transition (random.random(), prob, cell in current_world, counts[cell]):
-                new_world.add (cell)
-        current_world = new_world
+        current_world = {cell for cell in counts if transition (random.random(), prob, cell in current_world, counts[cell])}
     return current_world, random.getstate()

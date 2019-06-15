@@ -15,7 +15,7 @@ args = parser.parse_args(sys.argv[1:])
 inDirs = args.inDirs
 alpha_color = dict()
 color_Arr = plt.rcParams['axes.prop_cycle'].by_key()['color']
-i = 0.01
+i = 0
 j = 0
 l = len(color_Arr)
 while i < 1:
@@ -23,7 +23,7 @@ while i < 1:
     i += 0.05
     j += 1
 alpha_color['{:.2f}'.format(0.99)] = color_Arr[j%l]
-
+alpha_color['{:.2f}'.format(0.01)] = color_Arr[j%l]
 
 for inDir in inDirs:
     if not os.path.exists(inDir):
