@@ -9,7 +9,7 @@ def computeStats(values):
     mean = np.sum(values) / length
     squared_mean = np.sum(values*values) / length
     values_std = math.sqrt((squared_mean - mean**2) / length)
-    accumulated = np.array([np.sum(values[:i])/i for i in range(int(length*0.1), length+1)])
+    accumulated = np.array([np.sum(values[:i])/i for i in range(int(length*0.5), length+1)])
     accumulated_length = len(accumulated)
     i = 0
     p_value = 0
@@ -17,7 +17,7 @@ def computeStats(values):
     if np.ptp(candidate) != 0:
         w, p_value = shapiro(candidate)
         while p_value < 0.05 and (accumulated_length-i) > 20:
-            i += 25
+            i += 50
             candidate = accumulated[i:]
             if np.ptp(candidate) == 0:
                 break
