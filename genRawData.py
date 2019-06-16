@@ -3,6 +3,7 @@ import os, sys, math
 import argparse
 import ujson as json
 from functools import reduce
+from itertools import combinations
 from multiprocessing import Pool
 import numpy as np
 from scipy.stats import normaltest
@@ -22,10 +23,15 @@ def runStep (GoL):
     if count != 0:
         area = newGoL.computeArea()
     clusters = newGoL.computeClusters()
+    nstill = 0
+    for i in range(len(clusters)+1):
+        for j in combinations(clusters, i):
+            nstill += sum(map(GameOfLife.isStillLife , j))
+    
     return (GoL, 
         {
             'ncells': count,
-            'nstillLifes': sum(map(GameOfLife.isStillLife , clusters)),
+            'nstillLifes': nstill,
             'nclusters': len (clusters),
             'heat': len (initWorld^newGoL.currentWorld),
             'area': area,
