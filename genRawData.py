@@ -24,7 +24,7 @@ def runStep (GoL):
         area = newGoL.computeArea()
     clusters = newGoL.computeClusters()
     nstill = 0
-    for i in range(len(clusters)+1):
+    for i in range(1, len(clusters)+1):
         for j in combinations(clusters, i):
             nstill += sum(map(GameOfLife.isStillLife , j))
     
