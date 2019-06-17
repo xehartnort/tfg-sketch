@@ -22,8 +22,8 @@ while i < 1:
     alpha_color['{:.2f}'.format(i)] = color_Arr[j%l]
     i += 0.05
     j += 1
-alpha_color['{:.2f}'.format(0.99)] = color_Arr[j%l]
-alpha_color['{:.2f}'.format(0.01)] = color_Arr[j%l]
+alpha_color['{:.2f}'.format(1.0)] = color_Arr[j%l]
+#alpha_color['{:.2f}'.format(0.01)] = color_Arr[j%l]
 
 for inDir in inDirs:
     if not os.path.exists(inDir):

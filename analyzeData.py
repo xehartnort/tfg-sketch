@@ -8,7 +8,10 @@ def computeStats(values):
     length = values.shape[0]
     mean = np.sum(values) / length
     squared_mean = np.sum(values*values) / length
-    values_std = math.sqrt((squared_mean - mean**2) / length)
+    try:
+        values_std = math.sqrt((squared_mean - mean**2) / length)
+    except:
+        values_std=0
     p_value = 0
     if length != 1:
         accumulated = np.array([np.sum(values[:i])/i for i in range(int(length*0.5), length+1)])
