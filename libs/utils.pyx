@@ -10,11 +10,12 @@ neighboring_cells = [
     (-1,-1), (0,-1), (1,-1)
 ]
 
-transition_table = np.array([
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 1, 1, 0, 0, 0, 0, 0]
-], dtype=np.bool)
+transition_table = {
+    False: [False, False, False, True, False, False, False, False, 0],
+    True: [False, False, True, True, False, False, False, False, 0]
+}
 
+offset_memory = dict()
 
 def _hashify_(world) -> str:
     return hashlib.blake2s (bytes (str (world), 'utf-8')).hexdigest()
@@ -22,12 +23,14 @@ def _hashify_(world) -> str:
 def offset (delta) -> set:
     "Slide/offset all the cells by delta, a (dx, dy) vector."
     (dx, dy) = delta
-    return {(x+dx, y+dy) for (x, y) in neighboring_cells}
+    if delta not in offset_memory:
+        offset_memory[delta] = {(x+dx, y+dy) for (x, y) in neighboring_cells}
+    return offset_memory[delta]
 
 def computeClusters (current_world) -> list:
     cluster_list = []
     world = current_world.copy ()
-    while world: # empty set is the boolean false    
+    while world: # empty set is the boolean false
         cluster = set ()
         cell = world.pop ()
         cluster.add (cell)
@@ -74,7 +77,7 @@ def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
         int num_neigh: number of neighbors
     '''
     if rand < prob:
-        alive = transition_table[int(alive)][num_neigh]
+        alive = transition_table[alive][num_neigh]
     return alive
 
 def __run__ (current_world, float prob, unsigned int steps, randstate) -> tuple:
