@@ -118,3 +118,6 @@ JS/package-lock.json
 
 # OS files
 */.DS_Store
+
+# Mongo db files
+mongo/mongodb/*
