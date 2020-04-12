@@ -115,3 +115,6 @@ JS/package-lock.json
 #compiled
 *.o
 *.so
+
+# OS files
+*/.DS_Store
