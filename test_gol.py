@@ -56,4 +56,3 @@ def test_glider():
     life.run()
     im = life.draw(30)
     im.save(imgPath+'glider_run_rle.png', "PNG")
-
