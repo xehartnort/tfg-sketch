@@ -121,3 +121,6 @@ JS/package-lock.json
 
 # Mongo db files
 mongo/mongodb/*
+
+# Custom lib build
+libs/build/*

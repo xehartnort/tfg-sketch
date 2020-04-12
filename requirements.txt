@@ -1,0 +1,6 @@
+pymongo
+numpy
+ujson
+matplotlib
+cython
+pytest

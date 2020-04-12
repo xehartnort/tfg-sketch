@@ -15,38 +15,36 @@ transition_table = {
     True: [False, False, True, True, False, False, False, False, 0]
 }
 
-offset_memory = dict()
-
-def _hashify_(world) -> str:
+def _hashify_(set world) -> str:
     return hashlib.blake2s (bytes (str (world), 'utf-8')).hexdigest()
 
-def offset (delta) -> set:
+def offset (tuple delta, dict offsetMemory) -> set:
     "Slide/offset all the cells by delta, a (dx, dy) vector."
     (dx, dy) = delta
-    if delta not in offset_memory:
-        offset_memory[delta] = {(x+dx, y+dy) for (x, y) in neighboring_cells}
-    return offset_memory[delta]
+    if delta not in offsetMemory:
+        offsetMemory[delta] = {(x+dx, y+dy) for (x, y) in neighboring_cells}
+    return offsetMemory[delta]
 
-def computeClusters (current_world) -> list:
+def computeClusters (set current_world, dict offsetMemory) -> list:
     cluster_list = []
     world = current_world.copy ()
     while world: # empty set is the boolean false
         cluster = set ()
         cell = world.pop ()
         cluster.add (cell)
-        neighborhood = world & offset (cell)
+        neighborhood = world & offset (cell, offsetMemory)
         while neighborhood: # empty set is the boolean false
             cell = neighborhood.pop ()
             world.remove (cell)
             cluster.add (cell)
-            neighborhood |= world & offset (cell)
+            neighborhood |= world & offset (cell, offsetMemory)
         cluster_list.append (cluster)
     return cluster_list
 
-def rleEncode (rawStr) -> str:
+def rleEncode (str rawStr) -> str:
     return sub (r'([bo])\1*', lambda m: str (len (m.group(0)))+m.group(1) if len (m.group(0))>1 else m.group(1), rawStr)
 
-def genRleString (world) -> str:
+def genRleString (set world) -> str:
     '''
         Display the world as rle string of b and o characters.
     '''
@@ -57,21 +55,21 @@ def genRleString (world) -> str:
         rawStr.append (''.join('o' if (x, y) in world else 'b' for x in Xrange))
     return rleEncode ('$'.join(rawStr))+"!"
 
-def computeBoundingBox (world) -> tuple:
+def computeBoundingBox (set world) -> tuple:
     Xs, Ys = zip(*world)
     return (min(Xs), max(Xs), min(Ys), max(Ys))
 
-def computeWH(world) -> float:
+def computeWH(set world) -> int:
     minX, maxX, minY, maxY = computeBoundingBox(world)
     w = maxX - minX + 1
     h = maxY - minY + 1
     return (w,h)
 
-def computeClusterCenter (cluster) -> tuple:
+def computeClusterCenter (set cluster) -> tuple:
     Xs, Ys = zip(*cluster)
     return (round (sum (Xs)/len (cluster)), round (sum (Ys)/len (cluster)))
 
-def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
+def transition (float rand, float prob, bint alive, unsigned int num_neigh) -> bool:
     '''
         alive: it states if the cell is alive or not
         int num_neigh: number of neighbors
@@ -80,10 +78,9 @@ def transition (float rand, float prob, alive, unsigned int num_neigh) -> bool:
         alive = transition_table[alive][num_neigh]
     return alive
 
-def __run__ (current_world, float prob, unsigned int steps, randstate) -> tuple:
+def __run__ (set current_world, float prob, unsigned int steps, dict offsetMemory, randstate) -> tuple:
     random.setstate(randstate)
-    # main loop
     for s in range (steps):
-        counts = Counter(n for cell in current_world for n in offset (cell))
+        counts = Counter(n for cell in current_world for n in offset (cell, offsetMemory))
         current_world = {cell for cell in counts if transition (random.random(), prob, cell in current_world, counts[cell])}
     return current_world, random.getstate()

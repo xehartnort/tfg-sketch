@@ -1,4 +1,4 @@
-from libs.GoLv2 import GameOfLife
+from libs.GoL import GameOfLife
 import os, sys, math
 import argparse
 import ujson as json
@@ -8,7 +8,6 @@ from multiprocessing import Pool
 import numpy as np
 from scipy.stats import normaltest
 import random
-import matplotlib.pyplot as plt
 
 def genSeed():
     random_data = os.urandom(8)
@@ -16,13 +15,13 @@ def genSeed():
 
 def runStep (GoL):
     initWorld = GoL.currentWorld.copy()
-    newGoL = GameOfLife(world = initWorld, randState=GoL.getRandState(), prob=GoL.getAlpha())
+    newGoL = GameOfLife(world = initWorld, randState=GoL.randState, prob=GoL.alpha)
     newGoL.run()
-    count = newGoL.countLife()
+    count = newGoL.count()
     area = 0
     if count != 0:
-        area = newGoL.computeArea()
-    clusters = newGoL.computeClusters()    
+        area = newGoL.area()
+    clusters = newGoL.clusters()    
     return (GoL, 
         {
             'ncells': count,
@@ -78,8 +77,8 @@ if __name__ == "__main__":
                 'runs': [[] for _ in range(number_of_steps)]
             }
             # hay que añadir la iteración inicial
-            one = GameOfLife(initial_conf_file = fil)
-            initWorld = one.current_world
+            one = GameOfLife(lifeFromFile = fil)
+            initWorld = one.currentWorld
             GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = random.random()) for i in range(number_of_runs)] 
             chunkSize = 1+int(len(GoLs)/2)
             inc = int(number_of_runs/10)
@@ -90,7 +89,7 @@ if __name__ == "__main__":
                         nGoLs.append(GoL)
                         experiment['runs'][i].append(info)
                     GoLs = nGoLs
-            # Write output
+            # Write output to db :D
             with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:
                 json.dump(experiment, outfile)
         
