@@ -61,9 +61,12 @@ if __name__ == "__main__":
     ### END SIMULATION PARAMETERS ###
     mongoLocation = "mongodb://localhost:27017/"
     dbName = "GameOfLifeExperiments"
-    myclient = pymongo.MongoClient(mongoLocation)
+    try:
+        myclient = pymongo.MongoClient(mongoLocation) # check if connection was established successfully
+    except pymongo.errors.OperationFailure:
+        print("Unable to reach the database with the following location {}".format(mongoLocation))
+        exit(-1)
     dblist = myclient.list_database_names()
-    collist = []
     # Base de datos grande -> GameOfLifeExperiments
     # Colección -> tipo_de_vida.rle
     # Cada elemento es un experimento
