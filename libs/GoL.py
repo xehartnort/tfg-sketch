@@ -2,8 +2,13 @@
 import libs.utils as utils
 import time as t
 import random
+import os
 
 from PIL import Image, ImageDraw, ImageOps
+
+def genSeed():
+    random_data = os.urandom(8)
+    return int.from_bytes(random_data, byteorder="big")
 
 class GameOfLife:
 
@@ -13,20 +18,24 @@ class GameOfLife:
         tmp.run()
         return len((world - tmp.currentWorld)) == 0 # this can be notoriously simplified
 
-    def __init__(self, seed=None, randState=None, lifeFromFile=None, world=None, prob = 1):
+    def __init__(self, seed=None, randStateM=None, lifeFromFile=None, world=None, prob = 1):
         #inherit random status or start a new one
-        if randState:
-            random.setstate(randState)
+        if randStateM:
+            self._seed = None
+            random.setstate(randStateM)
         elif seed:
             self._seed = seed
             random.seed(seed)
+        else:
+            self._seed = genSeed()
+            random.seed(self._seed)
         self.prob = prob
         # read from a file or inherit world
         if lifeFromFile:
             self._loadLifeFromFile_(lifeFromFile)
         elif world:
-            self._initialWorld = world
-            self._currentWorld = world
+            self._initialWorld = world.copy()
+            self._currentWorld = world.copy()
         self._offsetMemory = dict()
         assert self._initialWorld != None
 
@@ -88,7 +97,7 @@ class GameOfLife:
                     newCells, skip = self._parseRow_(row_pos, r)
                     self._initialWorld |= newCells
                     row_pos += skip
-                self._currentWorld = self._initialWorld
+                self._currentWorld = self._initialWorld.copy()
     
     @property
     def currentWorld(self) -> set:

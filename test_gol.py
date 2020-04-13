@@ -56,3 +56,15 @@ def test_glider():
     life.run()
     im = life.draw(30)
     im.save(imgPath+'glider_run_rle.png', "PNG")
+
+
+def test_constructor():
+    life = GameOfLife(lifeFromFile = mainPath+'glider.rle', prob=1)
+    life_copy = GameOfLife(randStateM=life.randState(), world=life.currentWorld)
+    life.run()
+    assert life.currentWorld != life_copy.currentWorld
+    life_copy.run()
+    assert life.currentWorld == life_copy.currentWorld
+    life_copy.reset()
+    life.reset()
+    assert life.currentWorld == life_copy.currentWorld

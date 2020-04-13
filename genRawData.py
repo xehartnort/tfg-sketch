@@ -1,21 +1,16 @@
-from libs.GoL import GameOfLife
-import os, sys, math
+import os
+import sys
 import argparse
 import ujson as json
-from functools import reduce
-from itertools import combinations
-from multiprocessing import Pool
-import numpy as np
-from scipy.stats import normaltest
 import random
+import pymongo
 
-def genSeed():
-    random_data = os.urandom(8)
-    return int.from_bytes(random_data, byteorder="big")
+from libs.GoL import GameOfLife
+from multiprocessing import Pool
 
 def runStep (GoL):
-    initWorld = GoL.currentWorld.copy()
-    newGoL = GameOfLife(world = initWorld, randState=GoL.randState, prob=GoL.alpha)
+    initWorld = GoL.currentWorld
+    newGoL = GameOfLife(world = initWorld, randStateM=GoL.randState(), prob=GoL.alpha)
     newGoL.run()
     count = newGoL.count()
     area = 0
@@ -46,12 +41,11 @@ if __name__ == "__main__":
     ### BEGIN SIMULATION PARAMETERS ###
     number_of_steps = args.run_steps
     number_of_runs = args.number_of_runs
-    if args.sampler_seed == None:
-        sampler_seed = genSeed()
-    else: 
-        sampler_seed = args.sampler_seed
+    if args.sampler_seed:
+        sampler_seed = float(args.sampler_seed)
+    else:
+        sampler_seed = None # watch out here
     alpha_list = [float(i) for i in args.alpha_list]
-    ### END SIMULATION PARAMETERS ###
     if not os.path.exists(outDir):
         os.makedirs(outDir)
     if outDir[-1] != '/':
@@ -64,23 +58,42 @@ if __name__ == "__main__":
         if i > 1 or i <= 0:
             print("Error: alpha values must be in the interval (0,1]") 
             exit(-1)
+    ### END SIMULATION PARAMETERS ###
+    mongoLocation = "mongodb://localhost:27017/"
+    dbName = "GameOfLifeExperiments"
+    myclient = pymongo.MongoClient(mongoLocation)
+    dblist = myclient.list_database_names()
+    collist = []
+    # Base de datos grande -> GameOfLifeExperiments
+    # Colección -> tipo_de_vida.rle
+    # Cada elemento es un experimento
+    mydb = myclient["GameOfLifeExperiments"] # No database is created until it has content
+    fieldsWanted = { "runs": 0 }
+    findObject = {"samplerSeed": sampler_seed, "numberOfSteps": number_of_steps, "numberOfRuns": number_of_runs}
     for fil in inList:
+        filename = fil.split('/')[-1]
+        currentColletion = mydb[filename]
         for alpha in alpha_list:
-            filename = fil.split('/')[-1][:-4]
+            # here we need to check if this experiment is inserted, that is
+            # If there is an experiment with the same alpha, sampler_seed, numberOfSteps and numberOfRuns
+            findObject["alpha"] = alpha
+            experimentFound = currentColletion.find_one(findObject, fieldsWanted)
+            if experimentFound: # this experiment already exists
+                continue
             random.seed(sampler_seed)
             experiment = {
                 'samplerSeed': sampler_seed,
-                'pattern': filename, 
+                #'pattern': filename, 
                 'alpha': alpha,
-                'numberOfsteps': number_of_steps,
-                'numberOfruns': number_of_runs,
+                'numberOfSteps': number_of_steps,
+                'numberOfRuns': number_of_runs,
                 'runs': [[] for _ in range(number_of_steps)]
             }
             # hay que añadir la iteración inicial
             one = GameOfLife(lifeFromFile = fil)
             initWorld = one.currentWorld
-            GoLs = [GameOfLife(world = initWorld.copy(), prob = alpha, seed = random.random()) for i in range(number_of_runs)] 
-            chunkSize = 1+int(len(GoLs)/2)
+            GoLs = [ GameOfLife(world = initWorld, prob = alpha, seed = sampler_seed) for i in range(number_of_runs) ]
+            chunkSize = 1+int(number_of_runs/2)
             inc = int(number_of_runs/10)
             with Pool(maxtasksperchild=chunkSize) as p:
                 for i in range(number_of_steps):
@@ -90,6 +103,4 @@ if __name__ == "__main__":
                         experiment['runs'][i].append(info)
                     GoLs = nGoLs
             # Write output to db :D
-            with open(outDir+filename+'_{}.json'.format(alpha), 'w+') as outfile:
-                json.dump(experiment, outfile)
-        
+            currentColletion.insert_one(experiment)
