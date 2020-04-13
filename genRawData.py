@@ -36,9 +36,9 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--input-list', dest="inList", nargs='+', help="Files which contains raw data to be processed", required=True)
     parser.add_argument("-a", '--alpha-list', dest="alpha_list", nargs='+', help='List of probabilities of applying current rules in each run', required=True)
     args = parser.parse_args(sys.argv[1:])
+    ### BEGIN SIMULATION PARAMETERS ###
     outDir = args.outDir
     inList = args.inList
-    ### BEGIN SIMULATION PARAMETERS ###
     number_of_steps = args.run_steps
     number_of_runs = args.number_of_runs
     if args.sampler_seed:
@@ -58,15 +58,14 @@ if __name__ == "__main__":
         if i > 1 or i <= 0:
             print("Error: alpha values must be in the interval (0,1]") 
             exit(-1)
-    ### END SIMULATION PARAMETERS ###
     mongoLocation = "mongodb://localhost:27017/"
     dbName = "GameOfLifeExperiments"
     try:
-        myclient = pymongo.MongoClient(mongoLocation) # check if connection was established successfully
+        myclient = pymongo.MongoClient(mongoLocation)
     except pymongo.errors.OperationFailure:
         print("Unable to reach the database with the following location {}".format(mongoLocation))
         exit(-1)
-    dblist = myclient.list_database_names()
+    ### END SIMULATION PARAMETERS ###
     # Base de datos grande -> GameOfLifeExperiments
     # Colección -> tipo_de_vida.rle
     # Cada elemento es un experimento
@@ -77,24 +76,20 @@ if __name__ == "__main__":
         filename = fil.split('/')[-1]
         currentColletion = mydb[filename]
         for alpha in alpha_list:
-            # here we need to check if this experiment is inserted, that is
-            # If there is an experiment with the same alpha, sampler_seed, numberOfSteps and numberOfRuns
             findObject["alpha"] = alpha
-            experimentFound = currentColletion.find_one(findObject, fieldsWanted)
-            if experimentFound: # this experiment already exists
+            if currentColletion.find_one(findObject, fieldsWanted): # this experiment already exists
                 continue
             random.seed(sampler_seed)
             experiment = {
                 'samplerSeed': sampler_seed,
-                #'pattern': filename, 
                 'alpha': alpha,
                 'numberOfSteps': number_of_steps,
                 'numberOfRuns': number_of_runs,
                 'runs': [[] for _ in range(number_of_steps)]
             }
             # hay que añadir la iteración inicial
-            one = GameOfLife(lifeFromFile = fil)
-            initWorld = one.currentWorld
+            initialLife = GameOfLife(lifeFromFile = fil)
+            initWorld = initialLife.currentWorld
             GoLs = [ GameOfLife(world = initWorld, prob = alpha, seed = sampler_seed) for i in range(number_of_runs) ]
             chunkSize = 1+int(number_of_runs/2)
             inc = int(number_of_runs/10)
@@ -105,5 +100,5 @@ if __name__ == "__main__":
                         nGoLs.append(GoL)
                         experiment['runs'][i].append(info)
                     GoLs = nGoLs
-            # Write output to db :D
-            currentColletion.insert_one(experiment)
+            currentColletion.insert_one(experiment, w=0)
+    myclient.close()
